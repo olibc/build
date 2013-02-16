@@ -21,3 +21,6 @@ PRODUCT_PACKAGES += \
     libm \
     libstdc++ \
     libstlport
+
+# dynamic linker
+PRODUCT_PACKAGES += linker
