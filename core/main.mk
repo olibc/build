@@ -642,8 +642,7 @@ $(ALL_C_CPP_ETC_OBJECTS): | all_copied_headers
 # All the droid stuff, in directories
 .PHONY: files
 files: prebuilt \
-        $(modules_to_install) \
-        $(INSTALLED_ANDROID_INFO_TXT_TARGET)
+        $(modules_to_install)
 
 # -------------------------------------------------------------------
 
@@ -698,7 +697,6 @@ else # TARGET_BUILD_APPS
     $(INSTALLED_FILES_FILE) \
     $(INSTALLED_BUILD_PROP_TARGET) \
     $(BUILT_TARGET_FILES_PACKAGE) \
-    $(INSTALLED_ANDROID_INFO_TXT_TARGET) \
    )
 
   ifneq ($(TARGET_BUILD_PDK),true)

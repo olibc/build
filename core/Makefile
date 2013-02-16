@@ -577,7 +577,6 @@ endif
 # directories are up-to-date.
 $(BUILT_TARGET_FILES_PACKAGE): \
 		$(INSTALLED_SYSTEMTARBALL_TARGET) \
-		$(INSTALLED_ANDROID_INFO_TXT_TARGET) \
 		$(built_ota_tools) \
 		$(APKCERTS_FILE) \
 		$(HOST_OUT_EXECUTABLES)/fs_config \
@@ -625,7 +624,6 @@ endif
 		$(TARGET_OUT_DATA),$(zip_root)/DATA)
 	@# Extra contents of the OTA package
 	$(hide) mkdir -p $(zip_root)/OTA/bin
-	$(hide) $(ACP) $(INSTALLED_ANDROID_INFO_TXT_TARGET) $(zip_root)/OTA/
 	$(hide) $(ACP) $(PRIVATE_OTA_TOOLS) $(zip_root)/OTA/bin/
 	@# Files that do not end up in any images, but are necessary to
 	@# build them.
