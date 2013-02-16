@@ -298,12 +298,6 @@ endif
 # exist with the suffixes ".x509.pem" and ".pk8".
 DEFAULT_KEY_CERT_PAIR := $(DEFAULT_SYSTEM_DEV_CERTIFICATE)
 
-
-# Rules that need to be present for the all targets, even
-# if they don't do anything.
-.PHONY: systemimage
-systemimage:
-
 # -----------------------------------------------------------------
 
 .PHONY: event-log-tags
@@ -432,9 +426,6 @@ endif
 # side of caution, so the licenses for other third-party code are included here
 # too.
 #
-# This needs to be before the systemimage rules, because it adds to
-# ALL_DEFAULT_INSTALLED_MODULES, which those use to pick which files
-# go into the systemimage.
 
 .PHONY: notice_files
 
@@ -539,7 +530,6 @@ INTERNAL_USERIMAGES_BINARY_PATHS := $(sort $(dir $(INTERNAL_USERIMAGES_DEPS)))
 # $(1): the path of the output dictionary file
 define generate-userimage-prop-dictionary
 $(if $(INTERNAL_USERIMAGES_EXT_VARIANT),$(hide) echo "fs_type=$(INTERNAL_USERIMAGES_EXT_VARIANT)" >> $(1))
-$(if $(BOARD_SYSTEMIMAGE_PARTITION_SIZE),$(hide) echo "system_size=$(BOARD_SYSTEMIMAGE_PARTITION_SIZE)" >> $(1))
 $(if $(BOARD_USERDATAIMAGE_PARTITION_SIZE),$(hide) echo "userdata_size=$(BOARD_USERDATAIMAGE_PARTITION_SIZE)" >> $(1))
 $(if $(BOARD_CACHEIMAGE_FILE_SYSTEM_TYPE),$(hide) echo "cache_fs_type=$(BOARD_CACHEIMAGE_FILE_SYSTEM_TYPE)" >> $(1))
 $(if $(BOARD_CACHEIMAGE_PARTITION_SIZE),$(hide) echo "cache_size=$(BOARD_CACHEIMAGE_PARTITION_SIZE)" >> $(1))
@@ -674,108 +664,6 @@ else
 BOARD_NAND_SPARE_SIZE := 64
 endif
 
-# -----------------------------------------------------------------
-# system image
-#
-# Remove overridden packages from $(ALL_PDK_FUSION_FILES)
-PDK_FUSION_SYSIMG_FILES := \
-    $(filter-out $(foreach p,$(overridden_packages),$(p) %/$(p).apk), \
-        $(ALL_PDK_FUSION_FILES))
-
-INTERNAL_SYSTEMIMAGE_FILES := $(filter $(TARGET_OUT)/%, \
-    $(ALL_PREBUILT) \
-    $(ALL_COPIED_HEADERS) \
-    $(ALL_GENERATED_SOURCES) \
-    $(ALL_DEFAULT_INSTALLED_MODULES) \
-    $(PDK_FUSION_SYSIMG_FILES) \
-    $(RECOVERY_RESOURCE_ZIP))
-
-ifdef is_tests_build
-# We don't want to install tests modules to the system partition
-# when building "tests", because now "tests" may be built in a user, userdebug
-# or eng build variant and we don't want to pollute the system partition.
-# INTERNAL_SYSTEMIMAGE_FILES += $(filter $(TARGET_OUT)/%, \
-#    $(tests_MODULES))
-endif
-
-FULL_SYSTEMIMAGE_DEPS := $(INTERNAL_SYSTEMIMAGE_FILES) $(INTERNAL_USERIMAGES_DEPS)
-# -----------------------------------------------------------------
-# installed file list
-# Depending on anything that $(BUILT_SYSTEMIMAGE) depends on.
-# We put installed-files.txt ahead of image itself in the dependency graph
-# so that we can get the size stat even if the build fails due to too large
-# system image.
-INSTALLED_FILES_FILE := $(PRODUCT_OUT)/installed-files.txt
-$(INSTALLED_FILES_FILE): $(FULL_SYSTEMIMAGE_DEPS)
-	@echo Installed file list: $@
-	@mkdir -p $(dir $@)
-	@rm -f $@
-	$(hide) build/tools/fileslist.py $(TARGET_OUT) > $@
-
-.PHONY: installed-file-list
-installed-file-list: $(INSTALLED_FILES_FILE)
-ifneq ($(filter sdk win_sdk,$(MAKECMDGOALS)),)
-$(call dist-for-goals, sdk win_sdk, $(INSTALLED_FILES_FILE))
-endif
-ifneq ($(filter sdk_addon,$(MAKECMDGOALS)),)
-$(call dist-for-goals, sdk_addon, $(INSTALLED_FILES_FILE))
-endif
-
-systemimage_intermediates := \
-    $(call intermediates-dir-for,PACKAGING,systemimage)
-BUILT_SYSTEMIMAGE := $(systemimage_intermediates)/system.img
-
-# $(1): output file
-define build-systemimage-target
-  @echo "Target system fs image: $(1)"
-  @mkdir -p $(dir $(1)) $(systemimage_intermediates) && rm -rf $(systemimage_intermediates)/system_image_info.txt
-  $(call generate-userimage-prop-dictionary, $(systemimage_intermediates)/system_image_info.txt)
-endef
-
-$(BUILT_SYSTEMIMAGE): $(FULL_SYSTEMIMAGE_DEPS) $(INSTALLED_FILES_FILE)
-	$(call build-systemimage-target,$@)
-
-INSTALLED_SYSTEMIMAGE := $(PRODUCT_OUT)/system.img
-SYSTEMIMAGE_SOURCE_DIR := $(TARGET_OUT)
-
-# The system partition needs room for the recovery image as well.  We
-# now store the recovery image as a binary patch using the boot image
-# as the source (since they are very similar).  Generate the patch so
-# we can see how big it's going to be, and include that in the system
-# image size check calculation.
-ifneq ($(INSTALLED_RECOVERYIMAGE_TARGET),)
-intermediates := $(call intermediates-dir-for,PACKAGING,recovery_patch)
-RECOVERY_FROM_BOOT_PATCH := $(intermediates)/recovery_from_boot.p
-$(RECOVERY_FROM_BOOT_PATCH): $(INSTALLED_RECOVERYIMAGE_TARGET) \
-                             $(INSTALLED_BOOTIMAGE_TARGET) \
-			     $(HOST_OUT_EXECUTABLES)/imgdiff \
-	                     $(HOST_OUT_EXECUTABLES)/bsdiff
-	@echo "Construct recovery from boot"
-	mkdir -p $(dir $@)
-	PATH=$(HOST_OUT_EXECUTABLES):$$PATH $(HOST_OUT_EXECUTABLES)/imgdiff $(INSTALLED_BOOTIMAGE_TARGET) $(INSTALLED_RECOVERYIMAGE_TARGET) $@
-endif
-
-
-$(INSTALLED_SYSTEMIMAGE): $(BUILT_SYSTEMIMAGE) $(RECOVERY_FROM_BOOT_PATCH) | $(ACP)
-	@echo "Install system fs image: $@"
-	$(copy-file-to-target)
-	$(hide) $(call assert-max-image-size,$@ $(RECOVERY_FROM_BOOT_PATCH),$(BOARD_SYSTEMIMAGE_PARTITION_SIZE),yaffs)
-
-systemimage: $(INSTALLED_SYSTEMIMAGE)
-
-.PHONY: systemimage-nodeps snod
-systemimage-nodeps snod: $(filter-out systemimage-nodeps snod,$(MAKECMDGOALS)) \
-	            | $(INTERNAL_USERIMAGES_DEPS)
-	@echo "make $@: ignoring dependencies"
-	$(call build-systemimage-target,$(INSTALLED_SYSTEMIMAGE))
-	$(hide) $(call assert-max-image-size,$(INSTALLED_SYSTEMIMAGE),$(BOARD_SYSTEMIMAGE_PARTITION_SIZE),yaffs)
-
-ifneq (,$(filter systemimage-nodeps snod, $(MAKECMDGOALS)))
-ifeq (true,$(WITH_DEXPREOPT))
-$(warning Warning: with dexpreopt enabled, you may need a full rebuild.)
-endif
-endif
-
 #######
 ## system tarball
 define build-systemtarball-target
@@ -788,6 +676,14 @@ endef
 ifndef SYSTEM_TARBALL_FORMAT
     SYSTEM_TARBALL_FORMAT := bz2
 endif
+
+INTERNAL_SYSTEMIMAGE_FILES := $(filter $(TARGET_OUT)/%, \
+    $(ALL_PREBUILT) \
+    $(ALL_COPIED_HEADERS) \
+    $(ALL_GENERATED_SOURCES) \
+    $(ALL_DEFAULT_INSTALLED_MODULES) \
+    $(PDK_FUSION_SYSIMG_FILES) \
+    $(RECOVERY_RESOURCE_ZIP))
 
 system_tar := $(PRODUCT_OUT)/system.tar
 INSTALLED_SYSTEMTARBALL_TARGET := $(system_tar).$(SYSTEM_TARBALL_FORMAT)
@@ -1028,7 +924,7 @@ $(BUILT_TARGET_FILES_PACKAGE): \
 		$(INSTALLED_BOOTIMAGE_TARGET) \
 		$(INSTALLED_RADIOIMAGE_TARGET) \
 		$(INSTALLED_RECOVERYIMAGE_TARGET) \
-		$(INSTALLED_SYSTEMIMAGE) \
+		$(INSTALLED_SYSTEMTARBALL_TARGET) \
 		$(INSTALLED_USERDATAIMAGE_TARGET) \
 		$(INSTALLED_CACHEIMAGE_TARGET) \
 		$(INSTALLED_ANDROID_INFO_TXT_TARGET) \
@@ -1232,7 +1128,7 @@ endif
 name := $(name)-symbols-$(FILE_NAME_TAG)
 
 SYMBOLS_ZIP := $(PRODUCT_OUT)/$(name).zip
-$(SYMBOLS_ZIP): $(INSTALLED_SYSTEMIMAGE) $(INSTALLED_BOOTIMAGE_TARGET)
+$(SYMBOLS_ZIP): $(INSTALLED_SYSTEMTARBALL_TARGET) $(INSTALLED_BOOTIMAGE_TARGET)
 	@echo "Package symbols: $@"
 	$(hide) rm -rf $@
 	$(hide) mkdir -p $(dir $@)
@@ -1249,7 +1145,7 @@ endif
 name := $(name)-apps-$(FILE_NAME_TAG)
 
 APPS_ZIP := $(PRODUCT_OUT)/$(name).zip
-$(APPS_ZIP): $(INSTALLED_SYSTEMIMAGE)
+$(APPS_ZIP): $(INSTALLED_SYSTEMTARBALL_TARGET)
 	@echo "Package apps: $@"
 	$(hide) rm -rf $@
 	$(hide) mkdir -p $(dir $@)
@@ -1361,7 +1257,7 @@ deps := \
 	$(tools_notice_file_txt) \
 	$(OUT_DOCS)/offline-sdk-timestamp \
 	$(SYMBOLS_ZIP) \
-	$(INSTALLED_SYSTEMIMAGE) \
+	$(INSTALLED_SYSTEMTARBALL_TARGET) \
 	$(INSTALLED_USERDATAIMAGE_TARGET) \
 	$(INSTALLED_RAMDISK_TARGET) \
 	$(INSTALLED_SDK_BUILD_PROP_TARGET) \

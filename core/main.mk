@@ -700,7 +700,6 @@ bootimage: $(INSTALLED_BOOTIMAGE_TARGET)
 # Build files and then package it into the rom formats
 .PHONY: droidcore
 droidcore: files \
-	systemimage \
 	$(INSTALLED_BOOTIMAGE_TARGET) \
 	$(INSTALLED_RECOVERYIMAGE_TARGET) \
 	$(INSTALLED_USERDATAIMAGE_TARGET) \
