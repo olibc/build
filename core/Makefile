@@ -698,54 +698,6 @@ endif    # TARGET_DEVICE != generic*
 endif    # TARGET_PRODUCT != sdk
 
 # -----------------------------------------------------------------
-# A zip of the tests that are built when running "make tests".
-# This is very similar to BUILT_TARGET_FILES_PACKAGE, but we
-# only grab DATA, and it's called "*-tests-*.zip".
-#
-name := $(TARGET_PRODUCT)
-ifeq ($(TARGET_BUILD_TYPE),debug)
-  name := $(name)_debug
-endif
-name := $(name)-tests-$(FILE_NAME_TAG)
-
-intermediates := $(call intermediates-dir-for,PACKAGING,tests_zip)
-BUILT_TESTS_ZIP_PACKAGE := $(intermediates)/$(name).zip
-$(BUILT_TESTS_ZIP_PACKAGE): intermediates := $(intermediates)
-$(BUILT_TESTS_ZIP_PACKAGE): zip_root := $(intermediates)/$(name)
-
-# Depending on the image dependency files, instead of the image files itself,
-# guarantees that the underlying directories are up-to-date,
-# but don't really build the image.
-$(BUILT_TESTS_ZIP_PACKAGE): \
-    $(INTERNAL_USERDATAIMAGE_FILES) \
-    | $(ACP)
-	@echo "Package test files: $@"
-	$(hide) rm -rf $@ $(zip_root)
-	$(hide) mkdir -p $(dir $@) $(zip_root)
-	@# Contents of the data image
-	$(hide) $(call package_files-copy-root, \
-		$(TARGET_OUT_DATA),$(zip_root)/DATA)
-	$(hide) (cd $(zip_root) && zip -qry ../$(notdir $@) .)
-
-.PHONY: tests-zip-package
-tests-zip-package: $(BUILT_TESTS_ZIP_PACKAGE)
-
-# Target needed by tests build
-.PHONY: tests-build-target
-tests-build-target: $(BUILT_TESTS_ZIP_PACKAGE)
-
-ifneq (,$(filter $(MAKECMDGOALS),tests-build-target))
-  $(call dist-for-goals, tests-build-target, \
-          $(BUILT_TESTS_ZIP_PACKAGE))
-endif
-
-.PHONY: tests
-tests: $(BUILT_TESTS_ZIP_PACKAGE)
-ifneq (,$(filter tests, $(MAKECMDGOALS)))
-$(call dist-for-goals, tests, $(BUILT_TESTS_ZIP_PACKAGE))
-endif
-
-# -----------------------------------------------------------------
 # A zip of the symbols directory.  Keep the full paths to make it
 # more obvious where these files came from.
 #
