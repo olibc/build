@@ -290,16 +290,6 @@ ifdef CREATE_MODULE_INFO_FILE
 	"INSTALLED=\"$(strip $(ALL_MODULES.$(m).INSTALLED))\"" >> $(MODULE_INFO_FILE)))
 endif
 
-# -----------------------------------------------------------------
-
-# The dev key is used to sign this package, and as the key required
-# for future OTA packages installed by this system.  Actual product
-# deliverables will be re-signed by hand.  We expect this file to
-# exist with the suffixes ".x509.pem" and ".pk8".
-DEFAULT_KEY_CERT_PAIR := $(DEFAULT_SYSTEM_DEV_CERTIFICATE)
-
-# -----------------------------------------------------------------
-
 .PHONY: event-log-tags
 
 # Produce an event logs tag file for everything we know about, in order
@@ -506,33 +496,9 @@ $(call dist-for-goals, platform platform-java, $(INSTALLED_PLATFORM_ZIP))
 endif
 
 # -----------------------------------------------------------------
-# host tools needed to build dist and OTA packages
-
-DISTTOOLS :=  $(HOST_OUT_EXECUTABLES)/minigzip \
-	  $(HOST_OUT_EXECUTABLES)/mkbootfs \
-	  $(HOST_OUT_EXECUTABLES)/mkbootimg \
-	  $(HOST_OUT_EXECUTABLES)/fs_config \
-	  $(HOST_OUT_EXECUTABLES)/mkyaffs2image \
-	  $(HOST_OUT_EXECUTABLES)/zipalign \
-	  $(HOST_OUT_EXECUTABLES)/bsdiff \
-	  $(HOST_OUT_EXECUTABLES)/imgdiff \
-	  $(HOST_OUT_JAVA_LIBRARIES)/dumpkey.jar \
-	  $(HOST_OUT_JAVA_LIBRARIES)/signapk.jar \
-	  $(HOST_OUT_EXECUTABLES)/mkuserimg.sh \
-	  $(HOST_OUT_EXECUTABLES)/make_ext4fs \
-	  $(HOST_OUT_EXECUTABLES)/simg2img \
-	  $(HOST_OUT_EXECUTABLES)/e2fsck
-
-OTATOOLS := $(DISTTOOLS) \
-	  $(HOST_OUT_EXECUTABLES)/aapt
-
-.PHONY: otatools
-otatools: $(OTATOOLS)
-
-# -----------------------------------------------------------------
 # A zip of the directories that map to the target filesystem.
-# This zip can be used to create an OTA package or filesystem image
-# as a post-build step.
+# This zip can be used to create a filesystem image as a post-build
+# step.
 #
 name := $(TARGET_PRODUCT)
 ifeq ($(TARGET_BUILD_TYPE),debug)
@@ -555,14 +521,6 @@ define package_files-copy-root
     $(ACP) -rd $(strip $(1))/* $(2); \
   fi
 endef
-
-built_ota_tools := \
-	$(call intermediates-dir-for,EXECUTABLES,applypatch)/applypatch \
-	$(call intermediates-dir-for,EXECUTABLES,applypatch_static)/applypatch_static \
-	$(call intermediates-dir-for,EXECUTABLES,check_prereq)/check_prereq \
-	$(call intermediates-dir-for,EXECUTABLES,sqlite3)/sqlite3 \
-	$(call intermediates-dir-for,EXECUTABLES,updater)/updater
-$(BUILT_TARGET_FILES_PACKAGE): PRIVATE_OTA_TOOLS := $(built_ota_tools)
 
 $(BUILT_TARGET_FILES_PACKAGE): PRIVATE_RECOVERY_API_VERSION := $(RECOVERY_API_VERSION)
 
@@ -622,15 +580,6 @@ endif
 	@# Contents of the data image
 	$(hide) $(call package_files-copy-root, \
 		$(TARGET_OUT_DATA),$(zip_root)/DATA)
-	@# Extra contents of the OTA package
-	$(hide) mkdir -p $(zip_root)/OTA/bin
-	$(hide) $(ACP) $(PRIVATE_OTA_TOOLS) $(zip_root)/OTA/bin/
-	@# Files that do not end up in any images, but are necessary to
-	@# build them.
-	$(hide) mkdir -p $(zip_root)/META
-	$(hide) $(ACP) $(APKCERTS_FILE) $(zip_root)/META/apkcerts.txt
-	$(hide)	echo "$(PRODUCT_OTA_PUBLIC_KEYS)" > $(zip_root)/META/otakeys.txt
-	$(hide) echo "recovery_api_version=$(PRIVATE_RECOVERY_API_VERSION)" > $(zip_root)/META/misc_info.txt
 ifdef BOARD_FLASH_BLOCK_SIZE
 	$(hide) echo "blocksize=$(BOARD_FLASH_BLOCK_SIZE)" >> $(zip_root)/META/misc_info.txt
 endif
@@ -648,15 +597,6 @@ ifneq ($(TARGET_PRODUCT),sdk)
 ifeq ($(filter generic%,$(TARGET_DEVICE)),)
 ifneq ($(TARGET_NO_KERNEL),true)
 ifneq ($(recovery_fstab),)
-
-# -----------------------------------------------------------------
-# OTA update package
-
-name := $(TARGET_PRODUCT)
-ifeq ($(TARGET_BUILD_TYPE),debug)
-  name := $(name)_debug
-endif
-name := $(name)-ota-$(FILE_NAME_TAG)
 
 # -----------------------------------------------------------------
 # The update package

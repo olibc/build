@@ -268,8 +268,6 @@ endif # !user_variant
 ifeq (true,$(strip $(enable_target_debugging)))
   # Target is more debuggable and adbd is on by default
   ADDITIONAL_DEFAULT_PROPERTIES += ro.debuggable=1
-  # Include the debugging/testing OTA keys in this build.
-  INCLUDE_TEST_OTA_KEYS := true
 else # !enable_target_debugging
   # Target is less debuggable and adbd is off by default
   ADDITIONAL_DEFAULT_PROPERTIES += ro.debuggable=0
@@ -692,7 +690,6 @@ droid: apps_only
 else # TARGET_BUILD_APPS
   $(call dist-for-goals, droidcore, \
     $(INTERNAL_UPDATE_PACKAGE_TARGET) \
-    $(INTERNAL_OTA_PACKAGE_TARGET) \
     $(SYMBOLS_ZIP) \
     $(INSTALLED_FILES_FILE) \
     $(INSTALLED_BUILD_PROP_TARGET) \

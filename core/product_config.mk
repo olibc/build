@@ -358,12 +358,5 @@ ADDITIONAL_BUILD_PROPERTIES := \
     $(ADDITIONAL_BUILD_PROPERTIES) \
     $(PRODUCT_PROPERTY_OVERRIDES)
 
-# The OTA key(s) specified by the product config, if any.  The names
-# of these keys are stored in the target-files zip so that post-build
-# signing tools can substitute them for the test key embedded by
-# default.
-PRODUCT_OTA_PUBLIC_KEYS := $(sort \
-    $(PRODUCTS.$(INTERNAL_PRODUCT).PRODUCT_OTA_PUBLIC_KEYS))
-
 PRODUCT_EXTRA_RECOVERY_KEYS := $(sort \
     $(PRODUCTS.$(INTERNAL_PRODUCT).PRODUCT_EXTRA_RECOVERY_KEYS))
