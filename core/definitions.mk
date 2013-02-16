@@ -77,9 +77,6 @@ ALL_ORIGINAL_DYNAMIC_BINARIES:=
 # These files go into the SDK
 ALL_SDK_FILES:=
 
-# Files for dalvik.  This is often build without building the rest of the OS.
-INTERNAL_DALVIK_MODULES:=
-
 # All findbugs xml files
 ALL_FINDBUGS_FILES:=
 
@@ -1659,19 +1656,6 @@ define align-package
 $(hide) mv $@ $@.unaligned
 $(hide) $(ZIPALIGN) -f 4 $@.unaligned $@.aligned
 $(hide) mv $@.aligned $@
-endef
-
-define install-dex-debug
-$(hide) if [ -f "$(PRIVATE_INTERMEDIATES_DIR)/classes.dex" ]; then \
-	    mkdir -p $(TOP)/dalvik/DEBUG-FILES; \
-	    $(ACP) $(PRIVATE_INTERMEDIATES_DIR)/classes.dex \
-		$(TOP)/dalvik/DEBUG-FILES/$(PRIVATE_MODULE).dex; \
-	fi
-$(hide) if [ -f "$(PRIVATE_INTERMEDIATES_DIR)/classes.lst" ]; then \
-	    mkdir -p $(TOP)/dalvik/DEBUG-FILES; \
-	    $(ACP) $(PRIVATE_INTERMEDIATES_DIR)/classes.lst \
-		$(TOP)/dalvik/DEBUG-FILES/$(PRIVATE_MODULE).lst; \
-	fi
 endef
 
 # TODO(joeo): If we can ever upgrade to post 3.81 make and get the

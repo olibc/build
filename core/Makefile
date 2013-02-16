@@ -681,11 +681,6 @@ $(EMMA_META_ZIP) :
 endif # EMMA_INSTRUMENT=true
 
 # -----------------------------------------------------------------
-# dalvik something
-.PHONY: dalvikfiles
-dalvikfiles: $(INTERNAL_DALVIK_MODULES)
-
-# -----------------------------------------------------------------
 # Old PDK stuffs, retired
 # The pdk package (Platform Development Kit)
 

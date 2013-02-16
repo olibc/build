@@ -163,14 +163,6 @@ ifdef unbundled_goals
 $(unbundled_goals): $(MAKECMDGOALS)
 endif # unbundled_goals
 
-# Default to building dalvikvm on hosts that support it...
-ifeq ($(HOST_OS),linux)
-# ... or if the if the option is already set
-ifeq ($(WITH_HOST_DALVIK),)
-  WITH_HOST_DALVIK := true
-endif
-endif
-
 # ---------------------------------------------------------------
 # Include the product definitions.
 # We need to do this to translate TARGET_PRODUCT into its

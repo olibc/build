@@ -506,15 +506,6 @@ $(LOCAL_INSTALLED_MODULE): $(LOCAL_BUILT_MODULE)
 	$(copy-file-to-target-with-cp)
 endif
 
-ifdef LOCAL_DEX_PREOPT
-installed_odex := $(basename $(LOCAL_INSTALLED_MODULE)).odex
-built_odex := $(basename $(LOCAL_BUILT_MODULE)).odex
-$(installed_odex) : $(built_odex) | $(ACP)
-	@echo "Install: $@"
-	$(copy-file-to-target)
-
-$(LOCAL_INSTALLED_MODULE) : $(installed_odex)
-endif
 
 # All host modules that are not tagged with optional are automatically installed.
 # Save the installed files in ALL_HOST_INSTALLED_FILES.
