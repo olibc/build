@@ -359,11 +359,7 @@ MD5SUM:=md5sum
 endif
 
 # The default key if not set as LOCAL_CERTIFICATE
-ifdef PRODUCT_DEFAULT_DEV_CERTIFICATE
-  DEFAULT_SYSTEM_DEV_CERTIFICATE := $(PRODUCT_DEFAULT_DEV_CERTIFICATE)
-else
-  DEFAULT_SYSTEM_DEV_CERTIFICATE := build/target/product/security/testkey
-endif
+DEFAULT_SYSTEM_DEV_CERTIFICATE :=
 
 # ###############################################################
 # Set up final options.
