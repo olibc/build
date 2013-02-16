@@ -2037,11 +2037,6 @@ endef
 ## Other includes
 ###########################################################
 
-# -----------------------------------------------------------------
-# Rules and functions to help copy important files to DIST_DIR
-# when requested.
-include $(BUILD_SYSTEM)/distdir.mk
-
 # broken:
 #	$(foreach file,$^,$(if $(findstring,.a,$(suffix $file)),-l$(file),$(file)))
 
