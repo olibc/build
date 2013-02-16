@@ -666,44 +666,12 @@ files: prebuilt \
 .PHONY: checkbuild
 checkbuild: $(modules_to_check)
 
-.PHONY: ramdisk
-ramdisk: $(INSTALLED_RAMDISK_TARGET)
-
-.PHONY: factory_ramdisk
-factory_ramdisk: $(INSTALLED_FACTORY_RAMDISK_TARGET)
-
-.PHONY: factory_bundle
-factory_bundle: $(INSTALLED_FACTORY_BUNDLE_TARGET)
-
 .PHONY: systemtarball
 systemtarball: $(INSTALLED_SYSTEMTARBALL_TARGET)
-
-.PHONY: boottarball
-boottarball: $(INSTALLED_BOOTTARBALL_TARGET)
-
-.PHONY: userdataimage
-userdataimage: $(INSTALLED_USERDATAIMAGE_TARGET)
-
-ifneq (,$(filter userdataimage, $(MAKECMDGOALS)))
-$(call dist-for-goals, userdataimage, $(BUILT_USERDATAIMAGE_TARGET))
-endif
-
-.PHONY: userdatatarball
-userdatatarball: $(INSTALLED_USERDATATARBALL_TARGET)
-
-.PHONY: cacheimage
-cacheimage: $(INSTALLED_CACHEIMAGE_TARGET)
-
-.PHONY: bootimage
-bootimage: $(INSTALLED_BOOTIMAGE_TARGET)
 
 # Build files and then package it into the rom formats
 .PHONY: droidcore
 droidcore: files \
-	$(INSTALLED_BOOTIMAGE_TARGET) \
-	$(INSTALLED_RECOVERYIMAGE_TARGET) \
-	$(INSTALLED_USERDATAIMAGE_TARGET) \
-	$(INSTALLED_CACHEIMAGE_TARGET) \
 	$(INSTALLED_FILES_FILE)
 
 # dist_files only for putting your library into the dist directory with a full build.
@@ -747,9 +715,6 @@ else # TARGET_BUILD_APPS
     $(INSTALLED_BUILD_PROP_TARGET) \
     $(BUILT_TARGET_FILES_PACKAGE) \
     $(INSTALLED_ANDROID_INFO_TXT_TARGET) \
-    $(INSTALLED_RAMDISK_TARGET) \
-    $(INSTALLED_FACTORY_RAMDISK_TARGET) \
-    $(INSTALLED_FACTORY_BUNDLE_TARGET) \
    )
 
   ifneq ($(TARGET_BUILD_PDK),true)
