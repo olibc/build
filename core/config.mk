@@ -408,7 +408,7 @@ TARGET_GLOBAL_CFLAGS += $(TARGET_RELEASE_CFLAGS)
 TARGET_GLOBAL_CPPFLAGS += $(TARGET_RELEASE_CPPFLAGS)
 
 # define llvm tools and global flags
-include $(BUILD_SYSTEM)/llvm_config.mk
+#include $(BUILD_SYSTEM)/llvm_config.mk
 
 # ###############################################################
 # Collect a list of the SDK versions that we could compile against
