@@ -576,7 +576,6 @@ endif
 # Depending on the various images guarantees that the underlying
 # directories are up-to-date.
 $(BUILT_TARGET_FILES_PACKAGE): \
-		$(INSTALLED_RADIOIMAGE_TARGET) \
 		$(INSTALLED_SYSTEMTARBALL_TARGET) \
 		$(INSTALLED_ANDROID_INFO_TXT_TARGET) \
 		$(built_ota_tools) \
@@ -618,9 +617,6 @@ endif
 ifdef BOARD_KERNEL_PAGESIZE
 	$(hide) echo "$(BOARD_KERNEL_PAGESIZE)" > $(zip_root)/BOOT/pagesize
 endif
-	$(hide) $(foreach t,$(INSTALLED_RADIOIMAGE_TARGET),\
-	            mkdir -p $(zip_root)/RADIO; \
-	            $(ACP) $(t) $(zip_root)/RADIO/$(notdir $(t));)
 	@# Contents of the system image
 	$(hide) $(call package_files-copy-root, \
 		$(SYSTEMIMAGE_SOURCE_DIR),$(zip_root)/SYSTEM)
