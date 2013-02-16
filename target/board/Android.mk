@@ -2,23 +2,10 @@
 # Set up product-global definitions and include product-specific rules.
 #
 
-ifneq ($(strip $(TARGET_NO_BOOTLOADER)),true)
-  INSTALLED_BOOTLOADER_MODULE := $(PRODUCT_OUT)/bootloader
-  ifeq ($(strip $(TARGET_BOOTLOADER_IS_2ND)),true)
-    INSTALLED_2NDBOOTLOADER_TARGET := $(PRODUCT_OUT)/2ndbootloader
-  else
-    INSTALLED_2NDBOOTLOADER_TARGET :=
-  endif
-else
-  INSTALLED_BOOTLOADER_MODULE :=
-  INSTALLED_2NDBOOTLOADER_TARGET :=
-endif	# TARGET_NO_BOOTLOADER
+INSTALLED_BOOTLOADER_MODULE :=
+INSTALLED_2NDBOOTLOADER_TARGET :=
 
-ifneq ($(strip $(TARGET_NO_KERNEL)),true)
-  INSTALLED_KERNEL_TARGET := $(PRODUCT_OUT)/kernel
-else
-  INSTALLED_KERNEL_TARGET :=
-endif
+INSTALLED_KERNEL_TARGET :=
 
 -include $(TARGET_DEVICE_DIR)/AndroidBoard.mk
 

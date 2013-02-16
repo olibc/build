@@ -485,7 +485,6 @@ target_notice_file_html_gz := $(TARGET_OUT_INTERMEDIATES)/NOTICE.html.gz
 tools_notice_file_txt := $(HOST_OUT_INTERMEDIATES)/NOTICE.txt
 tools_notice_file_html := $(HOST_OUT_INTERMEDIATES)/NOTICE.html
 
-kernel_notice_file := $(TARGET_OUT_NOTICE_FILES)/src/kernel.txt
 pdk_fusion_notice_files := $(filter $(TARGET_OUT_NOTICE_FILES)/%, $(ALL_PDK_FUSION_FILES))
 
 $(eval $(call combine-notice-files, \
@@ -493,7 +492,7 @@ $(eval $(call combine-notice-files, \
 			$(target_notice_file_html), \
 			"Notices for files contained in the filesystem images in this directory:", \
 			$(TARGET_OUT_NOTICE_FILES), \
-			$(ALL_DEFAULT_INSTALLED_MODULES) $(kernel_notice_file) $(pdk_fusion_notice_files)))
+			$(ALL_DEFAULT_INSTALLED_MODULES) $(pdk_fusion_notice_files)))
 
 $(eval $(call combine-notice-files, \
 			$(tools_notice_file_txt), \
@@ -517,17 +516,6 @@ $(installed_notice_html_gz): $(target_notice_file_html_gz) | $(ACP)
 ifeq ($(ONE_SHOT_MAKEFILE),)
 ALL_DEFAULT_INSTALLED_MODULES += $(installed_notice_html_gz)
 endif
-
-# The kernel isn't really a module, so to get its module file in there, we
-# make the target NOTICE files depend on this particular file too, which will
-# then be in the right directory for the find in combine-notice-files to work.
-$(kernel_notice_file): \
-	    prebuilts/qemu-kernel/arm/LINUX_KERNEL_COPYING \
-	    | $(ACP)
-	@echo Copying: $@
-	$(hide) mkdir -p $(dir $@)
-	$(hide) $(ACP) $< $@
-
 
 # -----------------------------------------------------------------
 # Build a keystore with the authorized keys in it, used to verify the
@@ -1340,25 +1328,6 @@ endif # EMMA_INSTRUMENT=true
 .PHONY: dalvikfiles
 dalvikfiles: $(INTERNAL_DALVIK_MODULES)
 
-# -----------------------------------------------------------------
-# The emulator package
-ifeq ($(BUILD_EMULATOR),true)
-INTERNAL_EMULATOR_PACKAGE_FILES += \
-        $(HOST_OUT_EXECUTABLES)/emulator$(HOST_EXECUTABLE_SUFFIX) \
-        prebuilts/qemu-kernel/$(TARGET_ARCH)/kernel-qemu \
-        $(INSTALLED_RAMDISK_TARGET) \
-		$(INSTALLED_SYSTEMIMAGE) \
-		$(INSTALLED_USERDATAIMAGE_TARGET)
-
-name := $(TARGET_PRODUCT)-emulator-$(FILE_NAME_TAG)
-
-INTERNAL_EMULATOR_PACKAGE_TARGET := $(PRODUCT_OUT)/$(name).zip
-
-$(INTERNAL_EMULATOR_PACKAGE_TARGET): $(INTERNAL_EMULATOR_PACKAGE_FILES)
-	@echo "Package: $@"
-	$(hide) zip -qj $@ $(INTERNAL_EMULATOR_PACKAGE_FILES)
-
-endif
 # -----------------------------------------------------------------
 # Old PDK stuffs, retired
 # The pdk package (Platform Development Kit)
