@@ -3,7 +3,69 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <private/android_filesystem_config.h>
+/* taken from original <private/android_filesystem_config.h> */
+
+#define AID_ROOT             0  /* traditional unix root user */
+#define AID_SYSTEM        1000  /* system server */
+#define AID_SHELL         2000  /* adb and debug shell user */
+
+struct fs_path_config {
+    unsigned mode;
+    unsigned uid;
+    unsigned gid;
+    const char *prefix;
+};
+
+/* Rules for directories. (simplified)
+*/
+static struct fs_path_config android_dirs[] = {
+    { 00750, AID_ROOT,   AID_SHELL,  "sbin" },
+    { 00755, AID_ROOT,   AID_SHELL,  "system/bin" },
+    { 00755, AID_ROOT,   AID_SHELL,  "system/vendor" },
+    { 00755, AID_ROOT,   AID_ROOT,   0 },
+};
+
+/* Rules for files. (simplified)
+*/
+static struct fs_path_config android_files[] = {
+    { 00755, AID_ROOT,      AID_SHELL,     "system/bin/*" },
+    { 00755, AID_ROOT,      AID_SHELL,     "system/xbin/*" },
+    { 00755, AID_ROOT,      AID_SHELL,     "system/vendor/bin/*" },
+    { 00750, AID_ROOT,      AID_SHELL,     "sbin/*" },
+    { 00755, AID_ROOT,      AID_ROOT,      "bin/*" },
+    { 00644, AID_ROOT,      AID_ROOT,       0 },
+};
+
+static inline void fs_config(const char *path, int dir,
+                             unsigned *uid, unsigned *gid, unsigned *mode)
+{
+    struct fs_path_config *pc;
+    int plen;
+
+    if (path[0] == '/') {
+        path++;
+    }
+
+    pc = dir ? android_dirs : android_files;
+    plen = strlen(path);
+    for(; pc->prefix; pc++){
+        int len = strlen(pc->prefix);
+        if (dir) {
+            if(plen < len) continue;
+            if(!strncmp(pc->prefix, path, len)) break;
+            continue;
+        }
+        /* If name ends in * then allow partial matches. */
+        if (pc->prefix[len -1] == '*') {
+            if(!strncmp(pc->prefix, path, len - 1)) break;
+        } else if (plen == len){
+            if(!strncmp(pc->prefix, path, len)) break;
+        }
+    }
+    *uid = pc->uid;
+    *gid = pc->gid;
+    *mode = (*mode & (~07777)) | pc->mode;
+}
 
 #define DO_DEBUG 1
 
