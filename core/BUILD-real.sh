@@ -120,7 +120,7 @@ case "$1" in
 "build" | "")
     build
     ;;
-"help")
+"help" | "--help")
     usage
     ;;
 *)
