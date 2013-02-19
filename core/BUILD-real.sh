@@ -26,6 +26,16 @@ function menuconfig() {
         build_mconf
     fi
     $KCONFIG_DIR/$MCONF build/Config.in
+    if [ -f .config ]; then
+    # Generate Android build system friendly configurations
+    cat .config | sed -e :x -e "N; s/=y/=true/; tx" > $OLIBC_CONF
+    else
+        fatal "Error: no configuration is specified"
+    fi
+
+    true > Makefile
+    echo "-include .config-olibc" >> Makefile
+    echo "include build/core/main.mk" >> Makefile
 }
 
 # FIXME: remove ugly hack
@@ -62,24 +72,58 @@ function sanity_check() {
     fi
 }
 
-sanity_check
-source build/envsetup.sh
+function build() {
+    sanity_check
+    source build/envsetup.sh
 
-if [ -f $OLIBC_CONF ]; then
-    echo "Use the existing configurations"
-else
-    menuconfig
-    if [ -f .config ]; then
-        # Generate Android build system friendly configurations
-        cat .config | sed -e :x -e "N; s/=y/=true/; tx" > $OLIBC_CONF
+    if [ -f $OLIBC_CONF ]; then
+        echo "Use the existing configurations"
     else
-        fatal "Error: no configuration is specified"
+        menuconfig
     fi
-fi
 
-lunch "$(select_product)-userdebug" >/dev/null
+    lunch "$(select_product)-userdebug" >/dev/null
 
-true > Makefile
-echo "-include .config-olibc" >> Makefile
-echo "include build/core/main.mk" >> Makefile
-make
+    make
+}
+
+function clean() {
+    rm -rf out
+}
+
+function distclean() {
+    clean
+    rm .config $OLIBC_CONF
+}
+
+function usage() {
+    echo "usage: ./BUILD.sh <command>"
+    echo "  Commands:"
+    echo "    build      Build olibc"
+    echo "    config     Configure olibc"
+    echo "    menuconfig Alias of config"
+    echo "    clean      Clean up all output"
+    echo "    distclean  Clean up config file and all output"
+    echo "    help       Show this message"
+}
+
+case "$1" in
+"clean")
+    clean
+    ;;
+"config" | "menuconfig")
+    menuconfig
+    ;;
+"distclean")
+    distclean
+    ;;
+"build" | "")
+    build
+    ;;
+"help")
+    usage
+    ;;
+*)
+    echo "Unknown command '$1' !"
+    ;;
+esac

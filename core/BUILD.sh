@@ -1,1 +1,1 @@
-build/core/BUILD-real.sh
+build/core/BUILD-real.sh $@
