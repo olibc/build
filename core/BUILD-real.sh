@@ -107,16 +107,16 @@ function usage() {
 }
 
 case "$1" in
-"clean")
+"clean" | "--clean")
     clean
     ;;
-"config")
+"config" | "--config")
     menuconfig
     ;;
-"distclean")
+"distclean" | "--distclean")
     distclean
     ;;
-"build" | "")
+"build" | "--build" | "")
     build
     ;;
 "help" | "--help")
