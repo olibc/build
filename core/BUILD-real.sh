@@ -101,7 +101,6 @@ function usage() {
     echo "  Commands:"
     echo "    build      Build olibc"
     echo "    config     Configure olibc"
-    echo "    menuconfig Alias of config"
     echo "    clean      Clean up all output"
     echo "    distclean  Clean up config file and all output"
     echo "    help       Show this message"
@@ -111,7 +110,7 @@ case "$1" in
 "clean")
     clean
     ;;
-"config" | "menuconfig")
+"config")
     menuconfig
     ;;
 "distclean")
