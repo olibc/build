@@ -25,7 +25,7 @@ function menuconfig() {
     if [ ! -f $KCONFIG_DIR/MCONF ]; then
         build_mconf
     fi
-    $KCONFIG_DIR/$MCONF build/Config.in
+    $KCONFIG_DIR/$MCONF bionic/Config.in
     if [ -f .config ]; then
     # Generate Android build system friendly configurations
     cat .config | sed -e :x -e "N; s/=y/=true/; tx" > $OLIBC_CONF
