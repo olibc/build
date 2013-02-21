@@ -93,7 +93,8 @@ function clean() {
 
 function distclean() {
     clean
-    rm .config $OLIBC_CONF
+    make -C $KCONFIG_DIR -f Makefile.olibc distclean
+    rm -f .config $OLIBC_CONF
 }
 
 function usage() {
