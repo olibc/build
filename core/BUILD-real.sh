@@ -22,7 +22,7 @@ function build_mconf() {
 }
 
 function menuconfig() {
-    if [ ! -f $KCONFIG_DIR/MCONF ]; then
+    if [ ! -f $KCONFIG_DIR/$MCONF ]; then
         build_mconf
     fi
     $KCONFIG_DIR/$MCONF bionic/Config.in
