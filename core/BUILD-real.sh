@@ -72,6 +72,7 @@ function sanity_check() {
     fi
 }
 
+BUILD_TARGET_OPTS=
 function build() {
     sanity_check
     source build/envsetup.sh
@@ -84,7 +85,12 @@ function build() {
 
     lunch "$(select_product)-userdebug" >/dev/null
 
-    make
+    BUILD_TARGET_OPTS="`grep TARGET_TOOLS_PREFIX $OLIBC_CONF`"
+    eval $BUILD_TARGET_OPTS
+    if [ $TARGET_TOOLS_PREFIX ]; then
+        BUILD_TARGET_OPTS="TARGET_TOOLS_PREFIX=$TARGET_TOOLS_PREFIX"
+    fi
+    make $BUILD_TARGET_OPTS
 }
 
 function clean() {

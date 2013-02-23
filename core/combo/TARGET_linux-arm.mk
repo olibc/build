@@ -137,8 +137,12 @@ TARGET_GLOBAL_LDFLAGS += \
 			-Wl,-z,relro \
 			-Wl,-z,now \
 			-Wl,--warn-shared-textrel \
-			-Wl,--icf=safe \
 			$(arch_variant_ldflags)
+
+ifeq ($(TARGET_LD_USING_GOLD),true)
+TARGET_GLOBAL_LDFLAGS += \
+                        -Wl,--icf=safe
+endif
 
 TARGET_GLOBAL_CFLAGS += -mthumb-interwork
 
