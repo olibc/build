@@ -90,7 +90,7 @@ function build() {
     if [ $TARGET_TOOLS_PREFIX ]; then
         BUILD_TARGET_OPTS="TARGET_TOOLS_PREFIX=$TARGET_TOOLS_PREFIX"
     fi
-    make $BUILD_TARGET_OPTS
+    make $BUILD_TARGET_OPTS $*
 }
 
 function clean() {
@@ -104,13 +104,17 @@ function distclean() {
 }
 
 function usage() {
-    echo "usage: ./BUILD.sh <command>"
+    echo "usage: ./BUILD.sh <command|module_name>"
     echo "  Commands:"
-    echo "    build      Build olibc"
     echo "    config     Configure olibc"
     echo "    clean      Clean up all output"
     echo "    distclean  Clean up config file and all output"
     echo "    help       Show this message"
+    echo
+    echo "If no command is assigned, the script will build olibc from source."
+    echo "Alternatively, you can specify module name defined in Android.mk"
+    echo "and the build system would try to satisfy the dependency."
+    echo
 }
 
 case "$1" in
@@ -123,13 +127,13 @@ case "$1" in
 "distclean" | "--distclean")
     distclean
     ;;
-"build" | "--build" | "")
+"") # default rule
     build
     ;;
 "help" | "--help")
     usage
     ;;
 *)
-    echo "Unknown command '$1' !"
+    build $*
     ;;
 esac
