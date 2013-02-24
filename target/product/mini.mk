@@ -18,9 +18,7 @@
 PRODUCT_PACKAGES += \
     libc \
     libdl \
-    libm \
-    libstdc++ \
-    libstlport
+    libm
 
 # dynamic linker
 PRODUCT_PACKAGES += linker
