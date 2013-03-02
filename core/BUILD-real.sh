@@ -28,7 +28,7 @@ function menuconfig() {
     $KCONFIG_DIR/$MCONF bionic/Config.in
     if [ -f .config ]; then
     # Generate Android build system friendly configurations
-    cat .config | sed -e :x -e "N; s/=y/=true/; tx" > $OLIBC_CONF
+    cat .config | sed -e "s/=y$/=true/g" > $OLIBC_CONF
     else
         fatal "Error: no configuration is specified"
     fi
