@@ -22,3 +22,11 @@ PRODUCT_PACKAGES += \
 
 # dynamic linker
 PRODUCT_PACKAGES += linker
+
+ifeq ($(EXTRA_CXX_SUPPORT),true)
+PRODUCT_PACKAGES += libstdc++
+endif
+
+ifeq ($(EXTRA_STLPORT),true)
+PRODUCT_PACKAGES += libstlport
+endif
