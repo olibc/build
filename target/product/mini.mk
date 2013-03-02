@@ -27,6 +27,6 @@ ifeq ($(EXTRA_CXX_SUPPORT),true)
 PRODUCT_PACKAGES += libstdc++
 endif
 
-ifeq ($(EXTRA_STLPORT),true)
+ifeq ($(EXTRA_STLPORT_SUPPORT),true)
 PRODUCT_PACKAGES += libstlport
 endif
