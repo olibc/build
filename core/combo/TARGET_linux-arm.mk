@@ -70,6 +70,10 @@ ifneq ($(wildcard $(TARGET_TOOLS_PREFIX)gcc$(HOST_EXECUTABLE_SUFFIX)),)
     endif
 endif
 
+ifneq ($(findstring gold, $(shell $(TARGET_LD) -v)),)
+TARGET_LD_USING_GOLD := true
+endif
+
 TARGET_NO_UNDEFINED_LDFLAGS := -Wl,--no-undefined
 
 TARGET_arm_CFLAGS :=    -O2 \
