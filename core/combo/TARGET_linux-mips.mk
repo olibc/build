@@ -90,7 +90,7 @@ TARGET_GLOBAL_CFLAGS += \
 			-fpic -fPIE\
 			-ffunction-sections \
 			-fdata-sections \
-			-funwind-tables \
+			-fasynchronous-unwind-tables \
 			-Werror=format-security \
 			$(arch_variant_cflags)
 
