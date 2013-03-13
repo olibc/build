@@ -82,11 +82,6 @@ endif
 # it goes to <build-root>/out
 #OUT_DIR:=/tmp/stuff
 
-# If you want to always set certain system properties, add them to this list.
-# E.g., "ADDITIONAL_BUILD_PROPERTIES += ro.prop1=5 prop2=value"
-# This mechanism does not currently support values containing spaces.
-#ADDITIONAL_BUILD_PROPERTIES +=
-
 # If you want to reduce the system.img size by several meg, and are willing to
 # lose access to CJK (and other) character sets, define NO_FALLBACK_FONT:=true
 ifndef NO_FALLBACK_FONT
