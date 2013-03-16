@@ -1,6 +1,4 @@
 # Transform CPU Variant to TARGET_CPU_VARIANT
-#
-# TODO: Scorpion and Sparrow are just set to krait now...
 
 ifeq ($(strip $(TARGET_ARM_GENERIC)),true)
 TARGET_CPU_VARIANT := generic
@@ -20,12 +18,12 @@ TARGET_USE_KRAIT_BIONIC_OPTIMIZATION := true
 endif
 
 ifeq ($(strip $(TARGET_ARM_SCORPION)),true)
-TARGET_CPU_VARIANT := krait
+TARGET_CPU_VARIANT := scorpion
 TARGET_USE_SCORPION_BIONIC_OPTIMIZATION := true
 endif
 
 ifeq ($(strip $(TARGET_ARM_SPARROW)),true)
-TARGET_CPU_VARIANT := krait
+TARGET_CPU_VARIANT := sparrow
 TARGET_USE_SPARROW_BIONIC_OPTIMIZATION := true
 endif
 
