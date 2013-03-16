@@ -28,3 +28,7 @@ ifeq ($(strip $(TARGET_ARM_SPARROW)),true)
 TARGET_CPU_VARIANT := krait
 TARGET_USE_SPARROW_BIONIC_OPTIMIZATION := true
 endif
+
+ifneq (,$(strip $(OUT_DIR)))
+  OUT_DIR := $(subst ",,$(OUT_DIR))
+endif
