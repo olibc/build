@@ -34,7 +34,8 @@ function menuconfig() {
     fi
 
     true > Makefile
-    echo "-include $OLIBC_CONF" >> Makefile
+    echo "OLIBC_CONF:=$OLIBC_CONF" >> Makefile
+    echo "-include \$(OLIBC_CONF)" >> Makefile
     echo "include build/core/olibc.mk" >> Makefile
     echo "include build/core/main.mk" >> Makefile
 }
