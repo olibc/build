@@ -27,6 +27,10 @@ TARGET_CPU_VARIANT := sparrow
 TARGET_USE_SPARROW_BIONIC_OPTIMIZATION := true
 endif
 
+ifeq ($(ASYNC_UNWIND_TABLE)),true)
+  OLIBC_CFLAGS += -fasynchronous-unwind-tables
+endif
+
 ifneq (,$(strip $(OUT_DIR)))
   OUT_DIR := $(subst ",,$(OUT_DIR))
 endif

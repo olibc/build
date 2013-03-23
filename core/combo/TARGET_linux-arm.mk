@@ -105,7 +105,6 @@ TARGET_GLOBAL_CFLAGS += \
 			-msoft-float -fpic -fPIE \
 			-ffunction-sections \
 			-fdata-sections \
-			-fasynchronous-unwind-tables \
 			-fstack-protector \
 			-Wa,--noexecstack \
 			-Werror=format-security \

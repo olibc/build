@@ -100,7 +100,6 @@ TARGET_GLOBAL_CFLAGS += \
 			-fno-short-enums \
 			-fstrict-aliasing \
 			-funswitch-loops \
-			-fasynchronous-unwind-tables \
 			-fstack-protector
 
 android_config_h := $(call select-android-config-h,target_linux-x86)

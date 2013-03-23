@@ -90,7 +90,6 @@ TARGET_GLOBAL_CFLAGS += \
 			-fpic -fPIE\
 			-ffunction-sections \
 			-fdata-sections \
-			-funwind-tables \
 			-Wa,--noexecstack \
 			-Werror=format-security \
 			-D_FORTIFY_SOURCE=1 \
