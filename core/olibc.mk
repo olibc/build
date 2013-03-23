@@ -36,6 +36,12 @@ ifeq ($(ASYNC_UNWIND_TABLE)),true)
 endif
 
 # -----------------------------------------------------------------
+
+OLIBC_CFLAGS += $(EXTRA_OLIBC_CFLAGS)
+OLIBC_CPPFLAGS += $(EXTRA_OLIBC_CPPFLAGS)
+OLIBC_LDFLAGS += $(EXTRA_OLIBC_LDFLAGS)
+
+# -----------------------------------------------------------------
 #
 # This hack is for prevent Makefile dependency broken when OUT_DIR is set
 #
