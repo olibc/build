@@ -37,9 +37,9 @@ endif
 
 # -----------------------------------------------------------------
 
-OLIBC_CFLAGS += $(subst ",,$(EXTRA_OLIBC_CFLAGS))
-OLIBC_CPPFLAGS += $(subst ",,$(EXTRA_OLIBC_CPPFLAGS))
-OLIBC_LDFLAGS += $(subst ",,$(EXTRA_OLIBC_LDFLAGS))
+OLIBC_CFLAGS += $(shell echo $(EXTRA_OLIBC_CFLAGS))
+OLIBC_CPPFLAGS += $(shell echo $(EXTRA_OLIBC_CPPFLAGS))
+OLIBC_LDFLAGS += $(shell echo $(EXTRA_OLIBC_LDFLAGS))
 
 # -----------------------------------------------------------------
 #
@@ -50,5 +50,5 @@ OLIBC_LDFLAGS += $(subst ",,$(EXTRA_OLIBC_LDFLAGS))
 #   by the compiler which is not specified with quote.
 #
 ifneq (,$(strip $(OUT_DIR)))
-  OUT_DIR := $(subst ",,$(OUT_DIR))
+  OUT_DIR := $(shell echo $(OUT_DIR))
 endif
