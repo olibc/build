@@ -37,9 +37,9 @@ endif
 
 # -----------------------------------------------------------------
 
-OLIBC_CFLAGS += $(EXTRA_OLIBC_CFLAGS)
-OLIBC_CPPFLAGS += $(EXTRA_OLIBC_CPPFLAGS)
-OLIBC_LDFLAGS += $(EXTRA_OLIBC_LDFLAGS)
+OLIBC_CFLAGS += $(subst ",,$(EXTRA_OLIBC_CFLAGS))
+OLIBC_CPPFLAGS += $(subst ",,$(EXTRA_OLIBC_CPPFLAGS))
+OLIBC_LDFLAGS += $(subst ",,$(EXTRA_OLIBC_LDFLAGS))
 
 # -----------------------------------------------------------------
 #
