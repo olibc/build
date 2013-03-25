@@ -38,6 +38,14 @@ ifeq ($(ASYNC_UNWIND_TABLE)),true)
 endif
 
 # -----------------------------------------------------------------
+# Build with GNU-Style hash
+#
+
+ifeq ($(DEFAULT_GNU_STYLE_HASH),true)
+  OLIBC_LDFLAGS += -Wl,--hash-style=gnu
+endif
+
+# -----------------------------------------------------------------
 
 OLIBC_CFLAGS += $(shell echo $(EXTRA_OLIBC_CFLAGS))
 OLIBC_CPPFLAGS += $(shell echo $(EXTRA_OLIBC_CPPFLAGS))
