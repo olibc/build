@@ -8,10 +8,12 @@ endif
 
 ifeq ($(strip $(TARGET_ARM_CORTEX_A9)),true)
   TARGET_CPU_VARIANT := cortex-a9
+  OLIBC_CFLAGS += -mcpu=cortex-a9
 endif
 
 ifeq ($(strip $(TARGET_ARM_CORTEX_A15)),true)
   TARGET_CPU_VARIANT := cortex-a15
+  OLIBC_CFLAGS += -mcpu=cortex-a15
 endif
 
 ifeq ($(strip $(TARGET_ARM_KRAIT)),true)
