@@ -1,7 +1,6 @@
 # -----------------------------------------------------------------
 # Transform CPU Variant to TARGET_CPU_VARIANT
 #
-
 ifeq ($(strip $(TARGET_ARM_GENERIC)),true)
   TARGET_CPU_VARIANT := generic
 endif
@@ -33,7 +32,7 @@ endif
 
 # -----------------------------------------------------------------
 
-ifeq ($(ASYNC_UNWIND_TABLE)),true)
+ifeq ($(ASYNC_UNWIND_TABLE),true)
   OLIBC_CFLAGS += -fasynchronous-unwind-tables
 endif
 
