@@ -17,8 +17,7 @@
 # Typical configurations of olibc toolchain
 PRODUCT_PACKAGES += \
     libc \
-    libdl \
-    libm
+    libdl
 
 # dynamic linker
 PRODUCT_PACKAGES += linker
