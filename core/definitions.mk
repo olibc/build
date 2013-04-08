@@ -440,8 +440,8 @@ endef
 ###########################################################
 
 ifeq ($(SINGLE_BINARY_SUPPORT),true)
-  # In all-in-one mode we should filter out libdl, libm and libc
-  # since it's all in olibc.so
+  # In single binary mode we should filter out libdl, libm and libc
+  # since it is already concreted in olibc.so
   define normalize-libraries
     $(foreach so, $(filter %.so,
                     $(filter-out %olibc.so %libc.so %libm.so %libdl.so,$(1))), \
