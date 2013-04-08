@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-ifeq ($(ALL_IN_ONE),true)
+ifeq ($(SINGLE_BINARY_SUPPORT),true)
 # dynamic linker
 PRODUCT_PACKAGES += olibc
 

@@ -439,7 +439,7 @@ endef
 ## Any "path/to/libXXX.a" elements pass through unchanged.
 ###########################################################
 
-ifeq ($(ALL_IN_ONE),true)
+ifeq ($(SINGLE_BINARY_SUPPORT),true)
   # In all-in-one mode we should filter out libdl, libm and libc
   # since it's all in olibc.so
   define normalize-libraries

@@ -63,7 +63,7 @@ ifneq (,$(strip $(OUT_DIR)))
 endif
 
 # -----------------------------------------------------------------
-ifeq ($(ALL_IN_ONE),true)
+ifeq ($(SINGLE_BINARY_SUPPORT),true)
   DYNAMIC_LINKER:=/system/lib/olibc.so
 else
   DYNAMIC_LINKER:=/system/bin/linker
