@@ -439,10 +439,22 @@ endef
 ## Any "path/to/libXXX.a" elements pass through unchanged.
 ###########################################################
 
-define normalize-libraries
-$(foreach so,$(filter %.so,$(1)),-l$(patsubst lib%.so,%,$(notdir $(so))))\
-$(filter-out %.so,$(1))
-endef
+ifeq ($(ALL_IN_ONE),true)
+  # In all-in-one mode we should filter out libdl, libm and libc
+  # since it's all in olibc.so
+  define normalize-libraries
+    $(foreach so, $(filter %.so,
+                    $(filter-out %olibc.so %libc.so %libm.so %libdl.so,$(1))), \
+                  -l$(patsubst lib%.so,%,$(notdir $(so)))) \
+    $(filter-out %.so,$(1)) \
+    $(filter %olibc.so,$(1))
+  endef
+else
+  define normalize-libraries
+    $(foreach so,$(filter %.so,$(1)),-l$(patsubst lib%.so,%,$(notdir $(so))))\
+    $(filter-out %.so,$(1))
+  endef
+endif
 
 # TODO: change users to call the common version.
 define normalize-host-libraries

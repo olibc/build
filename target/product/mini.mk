@@ -14,6 +14,11 @@
 # limitations under the License.
 #
 
+ifeq ($(ALL_IN_ONE),true)
+# dynamic linker
+PRODUCT_PACKAGES += olibc
+
+else
 # Typical configurations of olibc toolchain
 PRODUCT_PACKAGES += \
     libc \
@@ -22,6 +27,7 @@ PRODUCT_PACKAGES += \
 
 # dynamic linker
 PRODUCT_PACKAGES += linker
+endif
 
 ifeq ($(EXTRA_CXX_SUPPORT),true)
 PRODUCT_PACKAGES += libstdc++

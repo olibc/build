@@ -240,7 +240,11 @@ TARGET_CRTEND_SO_O := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/crtend_so.o
 
 TARGET_STRIP_MODULE:=true
 
+ifeq ($(ALL_IN_ONE),true)
+TARGET_DEFAULT_SYSTEM_SHARED_LIBRARIES := olibc libstdc++
+else
 TARGET_DEFAULT_SYSTEM_SHARED_LIBRARIES := libc libstdc++ libm
+endif
 
 TARGET_CUSTOM_LD_COMMAND := true
 
@@ -269,7 +273,7 @@ endef
 
 define transform-o-to-executable-inner
 $(hide) $(PRIVATE_CXX) -nostdlib -Bdynamic -fPIE -pie \
-	-Wl,-dynamic-linker,/system/bin/linker \
+	-Wl,-dynamic-linker,$(strip $(DYNAMIC_LINKER)) \
 	-Wl,--gc-sections \
 	-Wl,-z,nocopyreloc \
 	-o $@ \

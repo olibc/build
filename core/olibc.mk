@@ -61,3 +61,10 @@ OLIBC_LDFLAGS += $(shell echo $(EXTRA_OLIBC_LDFLAGS))
 ifneq (,$(strip $(OUT_DIR)))
   OUT_DIR := $(shell echo $(OUT_DIR))
 endif
+
+# -----------------------------------------------------------------
+ifeq ($(ALL_IN_ONE),true)
+  DYNAMIC_LINKER:=/system/lib/olibc.so
+else
+  DYNAMIC_LINKER:=/system/bin/linker
+endif
