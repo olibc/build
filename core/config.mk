@@ -46,9 +46,6 @@ SRC_SERVERS:= $(TOPDIR)servers
 SRC_TARGET_DIR := $(TOPDIR)build/target
 SRC_API_DIR := $(TOPDIR)frameworks/base/api
 
-# Some specific paths to tools
-SRC_DROIDDOC_DIR := $(TOPDIR)build/tools/droiddoc
-
 # Various mappings to avoid hard-coding paths all over the place
 include $(BUILD_SYSTEM)/pathmap.mk
 
@@ -72,10 +69,6 @@ BUILD_PHONY_PACKAGE:= $(BUILD_SYSTEM)/phony_package.mk
 BUILD_HOST_PREBUILT:= $(BUILD_SYSTEM)/host_prebuilt.mk
 BUILD_PREBUILT:= $(BUILD_SYSTEM)/prebuilt.mk
 BUILD_MULTI_PREBUILT:= $(BUILD_SYSTEM)/multi_prebuilt.mk
-BUILD_JAVA_LIBRARY:= $(BUILD_SYSTEM)/java_library.mk
-BUILD_STATIC_JAVA_LIBRARY:= $(BUILD_SYSTEM)/static_java_library.mk
-BUILD_HOST_JAVA_LIBRARY:= $(BUILD_SYSTEM)/host_java_library.mk
-BUILD_DROIDDOC:= $(BUILD_SYSTEM)/droiddoc.mk
 BUILD_COPY_HEADERS := $(BUILD_SYSTEM)/copy_headers.mk
 BUILD_NATIVE_TEST := $(BUILD_SYSTEM)/native_test.mk
 BUILD_HOST_NATIVE_TEST := $(BUILD_SYSTEM)/host_native_test.mk
@@ -251,9 +244,6 @@ TARGET_TOOLCHAIN_ROOT := $(patsubst %/, %, $(dir $(TARGET_TOOLCHAIN_ROOT)))
 TARGET_TOOLCHAIN_ROOT := $(wildcard $(TARGET_TOOLCHAIN_ROOT))
 endif
 
-# Pick a Java compiler.
-include $(BUILD_SYSTEM)/combo/javac.mk
-
 # ---------------------------------------------------------------
 # Check that the configuration is current.  We check that
 # BUILD_ENV_SEQUENCE_NUMBER is current against this value.
@@ -303,7 +293,6 @@ TUNE2FS := $(HOST_OUT_EXECUTABLES)/tune2fs$(HOST_EXECUTABLE_SUFFIX)
 E2FSCK := $(HOST_OUT_EXECUTABLES)/e2fsck$(HOST_EXECUTABLE_SUFFIX)
 JARJAR := $(HOST_OUT_JAVA_LIBRARIES)/jarjar.jar
 PROGUARD := external/proguard/bin/proguard.sh
-JAVATAGS := build/tools/java-event-log-tags.py
 LLVM_RS_CC := $(HOST_OUT_EXECUTABLES)/llvm-rs-cc$(HOST_EXECUTABLE_SUFFIX)
 LLVM_RS_LINK := $(HOST_OUT_EXECUTABLES)/llvm-rs-link$(HOST_EXECUTABLE_SUFFIX)
 LINT := prebuilts/sdk/tools/lint

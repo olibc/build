@@ -178,10 +178,6 @@ endif # LOCAL_SDK_VERSION
 endif # EMMA_INSTRUMENT_STATIC
 endif # LOCAL_EMMA_INSTRUMENT
 
-#################################
-include $(BUILD_SYSTEM)/java.mk
-#################################
-
 LOCAL_SDK_RES_VERSION:=$(strip $(LOCAL_SDK_RES_VERSION))
 ifeq ($(LOCAL_SDK_RES_VERSION),)
   LOCAL_SDK_RES_VERSION:=$(LOCAL_SDK_VERSION)

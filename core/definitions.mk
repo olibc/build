@@ -842,17 +842,6 @@ endef
 
 
 ###########################################################
-## Commands for running java-event-log-tags.py
-###########################################################
-
-define transform-logtags-to-java
-@mkdir -p $(dir $@)
-@echo "logtags: $@ <= $<"
-$(hide) $(JAVATAGS) -o $@ $^
-endef
-
-
-###########################################################
 ## Commands for running protoc to compile .proto into .java
 ###########################################################
 
@@ -1479,8 +1468,6 @@ $(hide) if [ -s $(PRIVATE_CLASS_INTERMEDIATES_DIR)/java-source-list-uniq ] ; the
     \@$(PRIVATE_CLASS_INTERMEDIATES_DIR)/java-source-list-uniq \
     || ( rm -rf $(PRIVATE_CLASS_INTERMEDIATES_DIR) ; exit 41 ) \
 fi
-$(if $(PRIVATE_JAVA_LAYERS_FILE), $(hide) build/tools/java-layers.py \
-    $(PRIVATE_JAVA_LAYERS_FILE) \@$(PRIVATE_CLASS_INTERMEDIATES_DIR)/java-source-list-uniq,)
 $(hide) rm -f $(PRIVATE_CLASS_INTERMEDIATES_DIR)/java-source-list
 $(hide) rm -f $(PRIVATE_CLASS_INTERMEDIATES_DIR)/java-source-list-uniq
 $(if $(PRIVATE_JAR_EXCLUDE_FILES), $(hide) find $(PRIVATE_CLASS_INTERMEDIATES_DIR) \
