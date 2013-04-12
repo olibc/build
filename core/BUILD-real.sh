@@ -4,6 +4,14 @@ DEFAULT_PRODUCT=mini_armv7a_neon
 OLIBC_CONF=.config-olibc
 TOP=`pwd`
 
+# Override OLIBC_CONF if given
+for ARG in $*
+do
+    if [[ $ARG == OLIBC_CONF=* ]]; then
+        OLIBC_CONF=`echo $ARG | cut -d'=' -f2`
+    fi
+done
+
 function fatal() {
     echo "FATAL: $1"
     exit -1
