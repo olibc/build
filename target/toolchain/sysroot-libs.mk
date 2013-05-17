@@ -1,4 +1,4 @@
-TARGET_SYSROOT_LIB := $(TARGET_SYSROOT)/lib/
+TARGET_SYSROOT_LIB := $(TARGET_SYSROOT)/usr/lib/
 
 ifeq ($(SINGLE_BINARY_SUPPORT),true)
   SYSROOT_RAW_LIBS := olibc
@@ -7,6 +7,14 @@ else
   SYSROOT_RAW_LIBS := libc libdl libm
   SYSROOT_RAW_STATIC_LIBS := libc libm
 endif
+
+CRT_RAW_FILES := crtbegin_so.o crtbegin_static1.o crtbegin_static.o \
+                 crtbrand.o crtend_android.o crtend_so.o \
+                 crtbegin_dynamic.o crtbegin_dynamic1.o
+
+$(TARGET_SYSROOT_LIB)%.o: $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/%.o
+	$(hide) mkdir -p $(dir $@)
+	$(hide) cp $< $@
 
 $(TARGET_OUT_SHARED_LIBRARIES_UNSTRIPPED)/%.so: %
 
@@ -34,4 +42,6 @@ SYSROOT_LIBS := $(addsuffix .so, \
                   $(addprefix $(TARGET_SYSROOT_LIB), \
                     $(SYSROOT_RAW_LIBS)))
 
-sysroot: $(SYSROOT_LIBS) $(SYSROOT_STATIC_LIBS)
+CRT_FILES := $(addprefix $(TARGET_SYSROOT_LIB), $(CRT_RAW_FILES))
+
+sysroot: $(SYSROOT_LIBS) $(SYSROOT_STATIC_LIBS) $(CRT_FILES)
