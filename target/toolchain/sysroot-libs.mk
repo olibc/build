@@ -1,8 +1,8 @@
 TARGET_SYSROOT_LIB := $(TARGET_SYSROOT)/usr/lib/
 
 ifeq ($(SINGLE_BINARY_SUPPORT),true)
-  SYSROOT_RAW_LIBS := olibc
-  SYSROOT_RAW_STATIC_LIBS := olibc libc libm
+  SYSROOT_RAW_LIBS := olibc libolibc
+  SYSROOT_RAW_STATIC_LIBS := olibc libc libm libolibc
 else
   SYSROOT_RAW_LIBS := libc libdl libm
   SYSROOT_RAW_STATIC_LIBS := libc libm
@@ -33,6 +33,10 @@ $(TARGET_SYSROOT_LIB)libm.a: $(call intermediates-dir-for, STATIC_LIBRARIES,libm
 $(TARGET_SYSROOT_LIB)olibc.a: $(call intermediates-dir-for, STATIC_LIBRARIES,olibc,)/olibc.a
 	$(hide) mkdir -p $(dir $@)
 	$(hide) cp $< $@
+
+$(TARGET_SYSROOT_LIB)libolibc.%: $(TARGET_SYSROOT_LIB)olibc.%
+	$(hide) mkdir -p $(dir $@)
+	$(hide) ln -s $(notdir $<) $@
 
 SYSROOT_STATIC_LIBS := $(addsuffix .a, \
                   $(addprefix $(TARGET_SYSROOT_LIB), \
