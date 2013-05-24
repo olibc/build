@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+REAL_PATH=`realpath $$0 | xargs dirname | xargs -i realpath {}/../`
+$$REAL_PATH/etc/raw-toolchain/bin/$compilerName \
+   --sysroot=$$REAL_PATH/sysroot \
+   --specs=$$REAL_PATH/etc/olibc-gcc-spec $$*
