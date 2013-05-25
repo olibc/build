@@ -30,7 +30,7 @@
 cc1 -E %{traditional|traditional-cpp:-traditional-cpp}
 
 *cc1:
-%{mno-android|tno-android-cc:%{profile:-p};:%{profile:-p} %{!mglibc:%{!muclibc:%{!mbionic: -mbionic}}} %{!fno-pic:%{!fno-PIC:%{!fpic:%{!fPIC: -fpic}}}}}
+%{mno-android|tno-android-cc:%{profile:-p};:%{profile:-p} %{!fno-pic:%{!fno-PIC:%{!fpic:%{!fPIC: -fpic}}}}}
 
 *cc1_options:
 %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}} %{!iplugindir*:%{fplugin*:%:find-plugindir()}} %1 %{!Q:-quiet} %{!dumpbase:-dumpbase %B} %{d*} %{m*} %{aux-info*} %{fcompare-debug-second:%:compare-debug-auxbase-opt(%b)}  %{!fcompare-debug-second:%{c|S:%{o*:-auxbase-strip %*}%{!o*:-auxbase %b}}}%{!c:%{!S:-auxbase %b}}  %{g*} %{O*} %{W*&pedantic*} %{w} %{std*&ansi&trigraphs} %{v:-version} %{pg:-p} %{p} %{f*} %{undef} %{Qn:-fno-ident} %{Qy:} %{-help:--help} %{-target-help:--target-help} %{-version:--version} %{-help=*:--help=%*} %{!fsyntax-only:%{S:%W{o*}%{!o*:-o %b.s}}} %{fsyntax-only:-o %j} %{-param*} %{fmudflap|fmudflapth:-fno-builtin -fno-merge-constants} %{coverage:-fprofile-arcs -ftest-coverage} $cc1_options
@@ -46,9 +46,6 @@ cc1 -E %{traditional|traditional-cpp:-traditional-cpp}
 
 *endfile:
 %{mno-android|tno-android-ld:%{shared|pie:crtendS.o%s;:crtend.o%s} crtn.o%s;:%{shared: crtend_so%O%s;: crtend_android%O%s}}
-
-*link:
-%{!static:--eh-frame-hdr}  %{mbig-endian:%{march=armv7-a|mcpu=cortex-a5	   |mcpu=cortex-a7					   |mcpu=cortex-a8|mcpu=cortex-a9|mcpu=cortex-a15	   |mcpu=generic-armv7-a				   |march=armv7-m|mcpu=cortex-m3			   |march=armv7e-m|mcpu=cortex-m4			   |march=armv6-m|mcpu=cortex-m0			   :%{!r:--be8}}}%{mno-android|tno-android-ld:%{h*}    %{static:-Bstatic}    %{shared:-shared}    %{symbolic:-Bsymbolic}    %{rdynamic:-export-dynamic}    -dynamic-linker %{mglibc:/lib/ld-linux.so.3;:%{muclibc:/lib/ld-uClibc.so.0;:/system/lib/olibc.so}}    -X    %{mbig-endian:-EB} %{mlittle-endian:-EL} -m armelf_linux_eabi;:%{h*}    %{static:-Bstatic}    %{shared:-shared}    %{symbolic:-Bsymbolic}    %{rdynamic:-export-dynamic}    -dynamic-linker %{mglibc:/lib/ld-linux.so.3;:%{muclibc:/lib/ld-uClibc.so.0;:/system/lib/olibc.so}}    -X    %{mbig-endian:-EB} %{mlittle-endian:-EL} -m armelf_linux_eabi %{shared: -Bsymbolic} -z noexecstack -z relro -z now}
 
 *lib:
 %{mno-android|tno-android-ld:%{pthread:-lolibc} %{shared:-lolibc}    %{!shared:%{mieee-fp:-lieee} %{profile:-lc_p}%{!profile:-lolibc}};:%{shared:-lolibc}    %{!shared:%{mieee-fp:-lieee} %{profile:-lc_p}%{!profile:-lolibc}}   %{pthread: -lolibc}}
@@ -144,5 +141,5 @@ collect2
 %{mapcs-float:-mfloat}
 
 *link_command:
-%{!fsyntax-only:%{!c:%{!M:%{!MM:%{!E:%{!S:    %(linker) $link_command -pie %{!fno-use-linker-plugin:%{flto|flto=*|fuse-linker-plugin:     -plugin %(linker_plugin_file)     -plugin-opt=%(lto_wrapper)     -plugin-opt=-fresolution=%u.res     %{!nostdlib:%{!nodefaultlibs:%:pass-through-libs(%(link_gcc_c_sequence))}}     }}%{flto|flto=*:%<fcompare-debug*}     %{flto} %{flto=*} %l %{pie:-pie} %{fuse-ld=gold:%{fuse-ld=bfd:%e-fuse-ld=gold and -fuse-ld=bfd may not be used together}}     %{fuse-ld=gold:-use-gold}     %{fuse-ld=bfd:-use-ld}%X %{o*} %{e*} %{N} %{n} %{r}    %{s} %{t} %{u*} %{z} %{Z} %{!nostdlib:%{!nostartfiles:%S}}    %{static:} %{L*} %(mfwrap) %(link_libgcc) %o    %{fopenmp|ftree-parallelize-loops=*:%:include(libgomp.spec)%(link_gomp)}    %{fgnu-tm:%:include(libitm.spec)%(link_itm)}    %(mflib)  %{fsplit-stack: --wrap=pthread_create}    %{fprofile-arcs|fprofile-generate*|coverage:-lgcov}    %{!nostdlib:%{!nodefaultlibs:%(link_ssp) %(link_gcc_c_sequence)}}    %{!nostdlib:%{!nostartfiles:%E}} %{T*} }}}}}}
+%{!fsyntax-only:%{!c:%{!M:%{!MM:%{!E:%{!S:    %(linker) $link_command -pie %{!fno-use-linker-plugin:%{flto|flto=*|fuse-linker-plugin:     -plugin %(linker_plugin_file)     -plugin-opt=%(lto_wrapper)     -plugin-opt=-fresolution=%u.res     %{!nostdlib:%{!nodefaultlibs:%:pass-through-libs(%(link_gcc_c_sequence))}}     }}%{flto|flto=*:%<fcompare-debug*}     %{flto} %{flto=*} %l %{pie:-pie} %{fuse-ld=gold:%{fuse-ld=bfd:%e-fuse-ld=gold and -fuse-ld=bfd may not be used together}}     %{fuse-ld=gold:-use-gold}     %{fuse-ld=bfd:-use-ld}%X %{o*} %{e*} %{N} %{n} %{r}    %{s} %{t} %{u*} %{z} %{Z} %{!nostdlib:%{!nostartfiles:%S}}    %{static:} %{L*} %(mfwrap) %(link_libgcc) %o    %{fopenmp|ftree-parallelize-loops=*:%:include(libgomp.spec)%(link_gomp)}    %{fgnu-tm:%:include(libitm.spec)%(link_itm)}    %(mflib)  %{fsplit-stack: --wrap=pthread_create}    %{fprofile-arcs|fprofile-generate*|coverage:-lgcov}    %{!nostdlib:%{!nodefaultlibs:%(link_ssp) %(link_gcc_c_sequence)}}    %{!nostdlib:%{!nostartfiles:%E}} %{T*} }}}}}} -dynamic-linker /system/lib/olibc.so
 
