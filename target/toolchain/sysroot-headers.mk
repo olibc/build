@@ -14,7 +14,11 @@ LIBTHREAD_DB_RAW_HEADERS := $(shell find bionic/libthread_db/include/ -name *.h 
 LIBTHREAD_DB_HEADERS := $(addprefix $(TARGET_SYSROOT_INCLUDE), $(LIBTHREAD_DB_RAW_HEADERS))
 LIBM_RAW_HEADERS := $(shell find bionic/libm/include/ -maxdepth 1 -name *.h -printf "%P ")
 LIBM_HEADERS := $(addprefix $(TARGET_SYSROOT_INCLUDE), $(LIBM_RAW_HEADERS))
-LIBM_ARCH_RAW_HEADERS := $(shell find bionic/libm/include/$(TARGET_ARCH)/ -name *.h -printf "%P ")
+ifeq ($(TARGET_ARCH),x86)
+  LIBM_ARCH_RAW_HEADERS := $(shell find bionic/libm/include/i387/ -name *.h -printf "%P ")
+else
+  LIBM_ARCH_RAW_HEADERS := $(shell find bionic/libm/include/$(TARGET_ARCH)/ -name *.h -printf "%P ")
+endif
 LIBM_ARCH_HEADERS := $(addprefix $(TARGET_SYSROOT_INCLUDE), $(LIBM_ARCH_RAW_HEADERS))
 
 $(TARGET_SYSROOT_INCLUDE)%.h: bionic/libc/include/%.h
