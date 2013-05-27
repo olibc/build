@@ -39,13 +39,13 @@ $(GCC_SPEC): $(GCC_CFLAGS) $(GCC_CPPFLAGS) $(GCC_LDFLAGS) \
 	@$(GCC_SPEC_GENERATER) $(GCC_SPEC_TEMPLATE) \
                                $(TOOLCHAIN_INTERMEDIATES) $@
 
-$(GCC_WRAPPER):
+$(GCC_WRAPPER): $(GCC_WRAPPER_GENERATER) $(GCC_WRAPPER_TEMPLATE) $(OLIBC_CONF)
 	@mkdir -p $(dir $@)
 	@$(GCC_WRAPPER_GENERATER) $(GCC_WRAPPER_TEMPLATE) \
                                   $(notdir $(TARGET_TOOLS_PREFIX))gcc $@
 	@chmod +x $@
 
-$(GXX_WRAPPER):
+$(GXX_WRAPPER): $(GCC_WRAPPER_GENERATER) $(GCC_WRAPPER_TEMPLATE) $(OLIBC_CONF)
 	@mkdir -p $(dir $@)
 	@$(GCC_WRAPPER_GENERATER) $(GCC_WRAPPER_TEMPLATE) \
                                   $(notdir $(TARGET_TOOLS_PREFIX))g++ $@
