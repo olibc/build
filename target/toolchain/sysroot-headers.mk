@@ -21,37 +21,35 @@ else
 endif
 LIBM_ARCH_HEADERS := $(addprefix $(TARGET_SYSROOT_INCLUDE), $(LIBM_ARCH_RAW_HEADERS))
 
+define generate-sysroot-header
+  @mkdir -p $(dir $@)
+  @echo "host sysroot header: ($@)"
+  $(hide) cp $< $@
+endef
+
 $(TARGET_SYSROOT_INCLUDE)%.h: bionic/libc/include/%.h
-	$(hide) mkdir -p $(dir $@)
-	$(hide) cp $< $@
+	$(generate-sysroot-header)
 
 $(TARGET_SYSROOT_INCLUDE)%.h: bionic/libm/include/%.h
-	$(hide) mkdir -p $(dir $@)
-	$(hide) cp $< $@
+	$(generate-sysroot-header)
 
 $(TARGET_SYSROOT_INCLUDE)%.h: bionic/libm/include/$(TARGET_ARCH)/%.h
-	$(hide) mkdir -p $(dir $@)
-	$(hide) cp $< $@
+	$(generate-sysroot-header)
 
 $(TARGET_SYSROOT_INCLUDE)%.h: $(KERNEL_HEADERS_ARCH)/%.h
-	$(hide) mkdir -p $(dir $@)
-	$(hide) cp $< $@
+	$(generate-sysroot-header)
 
 $(TARGET_SYSROOT_INCLUDE)%.h: bionic/libc/kernel/common/%.h
-	$(hide) mkdir -p $(dir $@)
-	$(hide) cp $< $@
+	$(generate-sysroot-header)
 
 $(TARGET_SYSROOT_INCLUDE)%.h: bionic/libc/arch-$(TARGET_ARCH)/include/%.h
-	$(hide) mkdir -p $(dir $@)
-	$(hide) cp $< $@
+	$(generate-sysroot-header)
 
 $(TARGET_SYSROOT_INCLUDE)%: bionic/libstdc++/include/%
-	$(hide) mkdir -p $(dir $@)
-	$(hide) cp $< $@
+	$(generate-sysroot-header)
 
 $(TARGET_SYSROOT_INCLUDE)%.h: bionic/libthread_db/include/%.h
-	$(hide) mkdir -p $(dir $@)
-	$(hide) cp $< $@
+	$(generate-sysroot-header)
 
 sysroot: $(LIBC_HEADERS) $(KERNEL_HEADERS) \
          $(LIBCXX_HEADERS) $(KERNEL_COMMON_HEADERS) \

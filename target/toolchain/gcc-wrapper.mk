@@ -24,31 +24,37 @@ $(RAW_TOOLCHAIN_OUTPUT): $(RAW_TOOLCHAIN_PATH) $(OLIBC_CONF)
 $(GCC_CFLAGS): $(OLIBC_CONF)
 	@mkdir -p $(dir $@)
 	@echo $(TARGET_GLOBAL_CFLAGS) > $@
+	@echo "host generate gcc flags"
 
 $(GCC_CPPFLAGS): $(OLIBC_CONF)
 	@mkdir -p $(dir $@)
 	@echo $(TARGET_GLOBAL_CPPFLAGS) > $@
+	@echo "host generate g++ flags"
 
 $(GCC_LDFLAGS): $(OLIBC_CONF)
 	@mkdir -p $(dir $@)
 	@echo $(TARGET_GLOBAL_LDFLAGS) > $@
+	@echo "host generate ld flags"
 
 $(GCC_SPEC): $(GCC_CFLAGS) $(GCC_CPPFLAGS) $(GCC_LDFLAGS) \
              $(GCC_SPEC_TEMPLATE) $(OLIBC_CONF) $(GCC_SPEC_GENERATER)
 	@mkdir -p $(dir $@)
-	@$(GCC_SPEC_GENERATER) $(GCC_SPEC_TEMPLATE) \
-                               $(TOOLCHAIN_INTERMEDIATES) $@
+	@echo "host generate gcc specs"
+	$(hide) $(GCC_SPEC_GENERATER) $(GCC_SPEC_TEMPLATE) \
+                                      $(TOOLCHAIN_INTERMEDIATES) $@
 
 $(GCC_WRAPPER): $(GCC_WRAPPER_GENERATER) $(GCC_WRAPPER_TEMPLATE) $(OLIBC_CONF)
 	@mkdir -p $(dir $@)
-	@$(GCC_WRAPPER_GENERATER) $(GCC_WRAPPER_TEMPLATE) \
-                                  $(notdir $(TARGET_TOOLS_PREFIX))gcc $@
+	@echo "host generate gcc wrapper"
+	$(hide) $(GCC_WRAPPER_GENERATER) $(GCC_WRAPPER_TEMPLATE) \
+                                         $(notdir $(TARGET_TOOLS_PREFIX))gcc $@
 	@chmod +x $@
 
 $(GXX_WRAPPER): $(GCC_WRAPPER_GENERATER) $(GCC_WRAPPER_TEMPLATE) $(OLIBC_CONF)
 	@mkdir -p $(dir $@)
-	@$(GCC_WRAPPER_GENERATER) $(GCC_WRAPPER_TEMPLATE) \
-                                  $(notdir $(TARGET_TOOLS_PREFIX))g++ $@
+	@echo "host generate g++ wrapper"
+	$(hide) $(GCC_WRAPPER_GENERATER) $(GCC_WRAPPER_TEMPLATE) \
+                                         $(notdir $(TARGET_TOOLS_PREFIX))g++ $@
 	@chmod +x $@
 
 gcc-wrapper: $(GCC_WRAPPER) $(GXX_WRAPPER) \
