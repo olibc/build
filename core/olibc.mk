@@ -19,6 +19,11 @@ ifeq ($(strip $(TARGET_ARM_GENERIC)),true)
   TARGET_CPU_VARIANT := generic
 endif
 
+ifeq ($(strip $(TARGET_ARM_CORTEX_A8)),true)
+  TARGET_CPU_VARIANT := cortex-a8
+  OLIBC_CFLAGS += -mcpu=cortex-a8
+endif
+
 ifeq ($(strip $(TARGET_ARM_CORTEX_A9)),true)
   TARGET_CPU_VARIANT := cortex-a9
   OLIBC_CFLAGS += -mcpu=cortex-a9
