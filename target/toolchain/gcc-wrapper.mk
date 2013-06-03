@@ -6,6 +6,8 @@ GCC_WRAPPER := $(TOOLCHAIN_ROOT)/bin/$(GCC_WRAPPER_NAME)
 GXX_WRAPPER_NAME := $(TARGET_ARCH)-olibc-linux-gnueabi-g++
 GXX_WRAPPER := $(TOOLCHAIN_ROOT)/bin/$(GXX_WRAPPER_NAME)
 GCC_SPEC := $(TOOLCHAIN_ROOT)/etc/olibc-gcc-spec
+AR_WRAPPER_NAME := $(TARGET_ARCH)-olibc-linux-gnueabi-ar
+AR_WRAPPER := $(TOOLCHAIN_ROOT)/bin/$(AR_WRAPPER_NAME)
 
 GCC_CFLAGS := $(TOOLCHAIN_INTERMEDIATES)/gcc_default_cflags
 GCC_CPPFLAGS := $(TOOLCHAIN_INTERMEDIATES)/gcc_default_cxxflags
@@ -16,10 +18,13 @@ GCC_WRAPPER_TEMPLATE := build/target/toolchain/wrapper_template
 GCC_WRAPPER_GENERATER := build/target/toolchain/gen_wrapper.py
 RAW_TOOLCHAIN_PATH := $(abspath $(dir $(TARGET_TOOLS_PREFIX)))/../
 RAW_TOOLCHAIN_OUTPUT := $(TOOLCHAIN_ROOT)/etc/raw-toolchain
+REL_AR_PATH := ../etc/raw-toolchain/bin/$(notdir $(TARGET_TOOLS_PREFIX))ar
+ABS_AR_PATH := $(TOOLCHAIN_ROOT)/etc/raw-toolchain/bin/$(notdir $(TARGET_TOOLS_PREFIX))ar
 
 $(RAW_TOOLCHAIN_OUTPUT): $(RAW_TOOLCHAIN_PATH) $(OLIBC_CONF)
 	@mkdir -p $(dir $@)
 	@cp -a $(RAW_TOOLCHAIN_PATH) $(RAW_TOOLCHAIN_OUTPUT)
+	@touch $(dir $@)
 
 $(GCC_CFLAGS): $(OLIBC_CONF)
 	@mkdir -p $(dir $@)
@@ -57,5 +62,12 @@ $(GXX_WRAPPER): $(GCC_WRAPPER_GENERATER) $(GCC_WRAPPER_TEMPLATE) $(OLIBC_CONF)
                                          $(notdir $(TARGET_TOOLS_PREFIX))g++ $@
 	@chmod +x $@
 
+$(AR_WRAPPER): $(RAW_TOOLCHAIN_OUTPUT) $(OLIBC_CONF)
+	@mkdir -p $(dir $@)
+	@echo "host generate ar wrapper"
+	$(hide) ln -f -s $(REL_AR_PATH) $@
+	@touch $(ABS_AR_PATH)
+
 gcc-wrapper: $(GCC_WRAPPER) $(GXX_WRAPPER) \
+             $(AR_WRAPPER) \
              sysroot $(GCC_SPEC) $(RAW_TOOLCHAIN_OUTPUT)
