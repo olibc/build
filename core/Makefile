@@ -320,8 +320,6 @@ $(event_log_tags_file): $(event_log_tags_src) $(all_event_log_tags_file) $(pdk_f
 
 event-log-tags: $(event_log_tags_file)
 
-ALL_DEFAULT_INSTALLED_MODULES += $(event_log_tags_file)
-
 
 # -----------------------------------------------------------------
 # NOTICE files
@@ -398,11 +396,6 @@ $(target_notice_file_html_gz): $(target_notice_file_html) | $(MINIGZIP)
 installed_notice_html_gz := $(TARGET_OUT)/etc/NOTICE.html.gz
 $(installed_notice_html_gz): $(target_notice_file_html_gz) | $(ACP)
 	$(copy-file-to-target)
-
-# if we've been run my mm, mmm, etc, don't reinstall this every time
-ifeq ($(ONE_SHOT_MAKEFILE),)
-ALL_DEFAULT_INSTALLED_MODULES += $(installed_notice_html_gz)
-endif
 
 ifneq ($(BOARD_NAND_PAGE_SIZE),)
 mkyaffs2_extra_flags := -c $(BOARD_NAND_PAGE_SIZE)

@@ -78,12 +78,6 @@ include $(BUILD_SYSTEM)/help.mk
 # and host information.
 include $(BUILD_SYSTEM)/config.mk
 
-# This allows us to force a clean build - included after the config.make
-# environment setup is done, but before we generate any dependencies.  This
-# file does the rm -rf inline so the deps which are all done below will
-# be generated correctly
-include $(BUILD_SYSTEM)/cleanbuild.mk
-
 VERSION_CHECK_SEQUENCE_NUMBER := 3
 -include $(OUT_DIR)/versions_checked.mk
 ifneq ($(VERSION_CHECK_SEQUENCE_NUMBER),$(VERSIONS_CHECKED))
@@ -376,9 +370,6 @@ subdir_makefiles := \
 include $(subdir_makefiles)
 
 endif # ONE_SHOT_MAKEFILE
-
-# Now with all Android.mks loaded we can do post cleaning steps.
-include $(BUILD_SYSTEM)/post_clean.mk
 
 ifeq ($(stash_product_vars),true)
   $(call assert-product-vars, __STASHED)
