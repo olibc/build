@@ -49,18 +49,33 @@ def isPICorPIE(cflag):
   return (cflag == "-fpic" or cflag == "-fPIC" or
           cflag == "-fpie" or cflag == "-pie" or cflag == "-fPIE")
 
+def isWerror(cflag):
+  return cflag.startswith("-Werror")
+
+def isStd(cflag):
+  return cflag.startswith("-std=")
+
+def isICF(cflag):
+  return cflag.startswith("-Wl,--icf=")
+
 cc1_options = " ".join([cflag for cflag in cflags
                                 if not isPreDefMarco(cflag) and
                                    not isAsmArg(cflag) and
-                                   not isPICorPIE(cflag)])
+                                   not isPICorPIE(cflag) and
+                                   not isWerror(cflag) and
+                                   not isStd(cflag)])
 
 cc1plus_options = " ".join([cflag for cflag in (cflags+cppflags)
                                     if not isPreDefMarco(cflag) and
                                        not isAsmArg(cflag) and
-                                       not isPICorPIE(cflag)])
+                                       not isPICorPIE(cflag) and
+                                       not isWerror(cflag) and
+                                       not isStd(cflag)])
 
-link_options = " ".join([resolveLDOption(ldflag[4:]) for ldflag in ldflags
-                                                       if isLinkerArg(ldflag)])
+link_options = " ".join([resolveLDOption(ldflag[4:])
+                          for ldflag in ldflags
+                            if isLinkerArg(ldflag) and
+                               not isICF(ldflag)])
 
 asm_options = " ".join([asflag[4:] for asflag in cflags
                                      if isAsmArg(asflag)])
