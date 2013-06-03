@@ -36,3 +36,7 @@ endif
 ifeq ($(EXTRA_STLPORT_SUPPORT),true)
 PRODUCT_PACKAGES += libstlport
 endif
+
+ifeq ($(OLIBC_GCC_WRAPPER),true)
+PRODUCT_PACKAGES += gcc-wrapper
+endif
