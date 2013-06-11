@@ -3,6 +3,8 @@ TOOLCHAIN_INTERMEDIATES := $(PRODUCT_OUT)/obj/toolchain/
 
 GCC_WRAPPER_NAME := $(TARGET_ARCH)-olibc-linux-gnueabi-gcc
 GCC_WRAPPER := $(TOOLCHAIN_ROOT)/bin/$(GCC_WRAPPER_NAME)
+CC_WRAPPER_NAME := $(TARGET_ARCH)-olibc-linux-gnueabi-cc
+CC_WRAPPER := $(TOOLCHAIN_ROOT)/bin/$(CC_WRAPPER_NAME)
 GXX_WRAPPER_NAME := $(TARGET_ARCH)-olibc-linux-gnueabi-g++
 GXX_WRAPPER := $(TOOLCHAIN_ROOT)/bin/$(GXX_WRAPPER_NAME)
 GCC_SPEC := $(TOOLCHAIN_ROOT)/etc/olibc-gcc-spec
@@ -62,6 +64,12 @@ $(GXX_WRAPPER): $(GCC_WRAPPER_GENERATER) $(GCC_WRAPPER_TEMPLATE) $(OLIBC_CONF)
                                          $(notdir $(TARGET_TOOLS_PREFIX))g++ $@
 	@chmod +x $@
 
+$(CC_WRAPPER): $(GCC_WRAPPER) $(OLIBC_CONF)
+	@mkdir -p $(dir $@)
+	@echo "host generate cc wrapper"
+	$(hide) ln -f -s $(notdir $(GCC_WRAPPER)) $@
+	@touch $(GCC_WRAPPER)
+
 $(AR_WRAPPER): $(RAW_TOOLCHAIN_OUTPUT) $(OLIBC_CONF)
 	@mkdir -p $(dir $@)
 	@echo "host generate ar wrapper"
@@ -69,5 +77,5 @@ $(AR_WRAPPER): $(RAW_TOOLCHAIN_OUTPUT) $(OLIBC_CONF)
 	@touch $(ABS_AR_PATH)
 
 gcc-wrapper: $(GCC_WRAPPER) $(GXX_WRAPPER) \
-             $(AR_WRAPPER) \
+             $(CC_WRAPPER) $(AR_WRAPPER) \
              sysroot $(GCC_SPEC) $(RAW_TOOLCHAIN_OUTPUT)
