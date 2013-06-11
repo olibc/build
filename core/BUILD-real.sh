@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 DEFAULT_PRODUCT=mini_armv7a_neon
-OLIBC_CONF=.config-olibc
+OLIBC_CONF=.config
 TOP=`pwd`
 
 # Override OLIBC_CONF if given
@@ -34,12 +34,6 @@ function menuconfig() {
         build_mconf
     fi
     $KCONFIG_DIR/$MCONF bionic/Config.in
-    if [ -f .config ]; then
-    # Generate Android build system friendly configurations
-    cat .config | sed -e "s/=y$/=true/g" > $OLIBC_CONF
-    else
-        fatal "Error: no configuration is specified"
-    fi
 
     true > Makefile
     echo "OLIBC_CONF:=$OLIBC_CONF" >> Makefile
@@ -110,7 +104,7 @@ function clean() {
 function distclean() {
     clean
     make -C $KCONFIG_DIR -f Makefile.olibc distclean
-    rm -f .config $OLIBC_CONF
+    rm -f $OLIBC_CONF
 }
 
 function usage() {
