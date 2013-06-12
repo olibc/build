@@ -1,6 +1,8 @@
 TOOLCHAIN_ROOT := $(PRODUCT_OUT)/toolchain
 TOOLCHAIN_INTERMEDIATES := $(PRODUCT_OUT)/obj/toolchain/
 
+TOOLS := strip as ld ranlib ar nm objcopy objdump addr2line
+
 GCC_WRAPPER_NAME := $(TARGET_ARCH)-olibc-linux-gnueabi-gcc
 GCC_WRAPPER := $(TOOLCHAIN_ROOT)/bin/$(GCC_WRAPPER_NAME)
 CC_WRAPPER_NAME := $(TARGET_ARCH)-olibc-linux-gnueabi-cc
@@ -8,8 +10,9 @@ CC_WRAPPER := $(TOOLCHAIN_ROOT)/bin/$(CC_WRAPPER_NAME)
 GXX_WRAPPER_NAME := $(TARGET_ARCH)-olibc-linux-gnueabi-g++
 GXX_WRAPPER := $(TOOLCHAIN_ROOT)/bin/$(GXX_WRAPPER_NAME)
 GCC_SPEC := $(TOOLCHAIN_ROOT)/etc/olibc-gcc-spec
-AR_WRAPPER_NAME := $(TARGET_ARCH)-olibc-linux-gnueabi-ar
-AR_WRAPPER := $(TOOLCHAIN_ROOT)/bin/$(AR_WRAPPER_NAME)
+
+TOOL_WRAPPERS_NAME := $(addprefix $(TARGET_ARCH)-olibc-linux-gnueabi-, $(TOOLS))
+TOOL_WRAPPERS := $(addprefix $(TOOLCHAIN_ROOT)/bin/$(TARGET_ARCH)-olibc-linux-gnueabi-, $(TOOLS))
 
 GCC_CFLAGS := $(TOOLCHAIN_INTERMEDIATES)/gcc_default_cflags
 GCC_CPPFLAGS := $(TOOLCHAIN_INTERMEDIATES)/gcc_default_cxxflags
@@ -70,12 +73,14 @@ $(CC_WRAPPER): $(GCC_WRAPPER) $(OLIBC_CONF)
 	$(hide) ln -f -s $(notdir $(GCC_WRAPPER)) $@
 	@touch $(GCC_WRAPPER)
 
-$(AR_WRAPPER): $(RAW_TOOLCHAIN_OUTPUT) $(OLIBC_CONF)
+$(TOOLCHAIN_ROOT)/bin/$(TARGET_ARCH)-olibc-linux-gnueabi-%: \
+	$(TOOLCHAIN_ROOT)/etc/raw-toolchain/bin/$(notdir $(TARGET_TOOLS_PREFIX))% \
+ 	$(GCC_WRAPPER) $(OLIBC_CONF)
 	@mkdir -p $(dir $@)
-	@echo "host generate ar wrapper"
-	$(hide) ln -f -s $(REL_AR_PATH) $@
-	@touch $(ABS_AR_PATH)
+	@echo "host generate tool wrapper"
+	$(hide) ln -f -s ../etc/raw-toolchain/bin/$(notdir $<) $@
+	@touch $<
 
 gcc-wrapper: $(GCC_WRAPPER) $(GXX_WRAPPER) \
-             $(CC_WRAPPER) $(AR_WRAPPER) \
+             $(TOOL_WRAPPERS) \
              sysroot $(GCC_SPEC) $(RAW_TOOLCHAIN_OUTPUT)
