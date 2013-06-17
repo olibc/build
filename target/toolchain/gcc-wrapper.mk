@@ -23,13 +23,12 @@ GCC_WRAPPER_TEMPLATE := build/target/toolchain/wrapper_template
 GCC_WRAPPER_GENERATER := build/target/toolchain/gen_wrapper.py
 RAW_TOOLCHAIN_PATH := $(abspath $(dir $(TARGET_TOOLS_PREFIX)))/../
 RAW_TOOLCHAIN_OUTPUT := $(TOOLCHAIN_ROOT)/etc/raw-toolchain
-REL_AR_PATH := ../etc/raw-toolchain/bin/$(notdir $(TARGET_TOOLS_PREFIX))ar
-ABS_AR_PATH := $(TOOLCHAIN_ROOT)/etc/raw-toolchain/bin/$(notdir $(TARGET_TOOLS_PREFIX))ar
+RAW_TOOLS := $(addprefix $(RAW_TOOLCHAIN_OUTPUT)/bin/$(notdir $(TARGET_TOOLS_PREFIX)), $(TOOLS))
 
 $(RAW_TOOLCHAIN_OUTPUT): $(RAW_TOOLCHAIN_PATH) $(OLIBC_CONF)
 	@mkdir -p $(dir $@)
 	@cp -a $(RAW_TOOLCHAIN_PATH) $(RAW_TOOLCHAIN_OUTPUT)
-	@touch $(dir $@)
+	@touch $@/
 
 $(GCC_CFLAGS): $(OLIBC_CONF)
 	@mkdir -p $(dir $@)
@@ -73,14 +72,19 @@ $(CC_WRAPPER): $(GCC_WRAPPER) $(OLIBC_CONF)
 	$(hide) ln -f -s $(notdir $(GCC_WRAPPER)) $@
 	@touch $(GCC_WRAPPER)
 
+$(RAW_TOOLCHAIN_OUTPUT)/bin/$(notdir $(TARGET_TOOLS_PREFIX))%: \
+	$(RAW_TOOLCHAIN_OUTPUT)
+	@touch $@
+
 $(TOOLCHAIN_ROOT)/bin/$(TARGET_ARCH)-olibc-linux-gnueabi-%: \
-	$(TOOLCHAIN_ROOT)/etc/raw-toolchain/bin/$(notdir $(TARGET_TOOLS_PREFIX))% \
- 	$(GCC_WRAPPER) $(OLIBC_CONF)
+	$(RAW_TOOLCHAIN_OUTPUT)/bin/$(notdir $(TARGET_TOOLS_PREFIX))% \
+ 	$(OLIBC_CONF)
 	@mkdir -p $(dir $@)
-	@echo "host generate tool wrapper"
+	@echo "host generate" \
+	      $(subst $(TARGET_ARCH)-olibc-linux-gnueabi-,, $(notdir $@)) \
+              "wrapper"
 	$(hide) ln -f -s ../etc/raw-toolchain/bin/$(notdir $<) $@
-	@touch $<
 
 gcc-wrapper: $(GCC_WRAPPER) $(GXX_WRAPPER) \
-             $(TOOL_WRAPPERS) \
+             $(TOOL_WRAPPERS) $(CC_WRAPPER) $(RAW_TOOLS) \
              sysroot $(GCC_SPEC) $(RAW_TOOLCHAIN_OUTPUT)
