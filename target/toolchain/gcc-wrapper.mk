@@ -1,4 +1,4 @@
-TOOLCHAIN_ROOT := $(PRODUCT_OUT)/toolchain
+TOOLCHAIN_ROOT := $(OUT_DIR)/toolchain
 TOOLCHAIN_INTERMEDIATES := $(PRODUCT_OUT)/obj/toolchain/
 
 TOOLS := strip as ld ranlib ar nm objcopy objdump addr2line
