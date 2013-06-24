@@ -33,6 +33,11 @@ $(TARGET_SYSROOT_INCLUDE)%.h: bionic/libc/include/%.h
 $(TARGET_SYSROOT_INCLUDE)%.h: bionic/libm/include/%.h
 	$(generate-sysroot-header)
 
+ifeq ($(TARGET_ARCH),x86)
+$(TARGET_SYSROOT_INCLUDE)%.h: bionic/libm/include/i387/%.h
+	$(generate-sysroot-header)
+endif
+
 $(TARGET_SYSROOT_INCLUDE)%.h: bionic/libm/include/$(TARGET_ARCH)/%.h
 	$(generate-sysroot-header)
 
