@@ -1,11 +1,10 @@
 TARGET_SYSROOT_LIB := $(TARGET_SYSROOT)/usr/lib/
 
+SYSROOT_RAW_LIBS := libc libdl libm
+SYSROOT_RAW_STATIC_LIBS := libc libm
 ifeq ($(SINGLE_BINARY_SUPPORT),true)
-  SYSROOT_RAW_LIBS := olibc libolibc
-  SYSROOT_RAW_STATIC_LIBS := olibc libc libm libolibc
-else
-  SYSROOT_RAW_LIBS := libc libdl libm
-  SYSROOT_RAW_STATIC_LIBS := libc libm
+  SYSROOT_RAW_LIBS += olibc libolibc
+  SYSROOT_RAW_STATIC_LIBS += olibc libolibc
 endif
 
 CRT_RAW_FILES := crtbegin_so.o crtbegin_static1.o crtbegin_static.o \
@@ -25,6 +24,20 @@ $(TARGET_OUT_SHARED_LIBRARIES_UNSTRIPPED)/%.so: %
 
 $(TARGET_SYSROOT_LIB)%.so: $(TARGET_OUT_SHARED_LIBRARIES_UNSTRIPPED)/%.so
 	$(generate-sysroot-lib)
+
+ifeq ($(SINGLE_BINARY_SUPPORT),true)
+$(TARGET_SYSROOT_LIB)libc.so:
+	@mkdir -p $(dir $@)
+	@ln -f -s olibc.so $@
+
+$(TARGET_SYSROOT_LIB)libm.so:
+	@mkdir -p $(dir $@)
+	@ln -f -s olibc.so $@
+
+$(TARGET_SYSROOT_LIB)libdl.so:
+	@mkdir -p $(dir $@)
+	@ln -f -s olibc.so $@
+endif
 
 $(TARGET_SYSROOT_LIB)libc.a: $(call intermediates-dir-for, STATIC_LIBRARIES,libc,)/libc.a
 	$(generate-sysroot-lib)
