@@ -1,7 +1,7 @@
 TARGET_SYSROOT_LIB := $(TARGET_SYSROOT)/usr/lib/
 
-SYSROOT_RAW_LIBS := libc libdl libm
-SYSROOT_RAW_STATIC_LIBS := libc libm
+SYSROOT_RAW_LIBS := libc libdl libm libthread_db
+SYSROOT_RAW_STATIC_LIBS := libc libm libthread_db
 ifeq ($(SINGLE_BINARY_SUPPORT),true)
   SYSROOT_RAW_LIBS += olibc libolibc
   SYSROOT_RAW_STATIC_LIBS += olibc libolibc
@@ -46,6 +46,9 @@ $(TARGET_SYSROOT_LIB)libm.a: $(call intermediates-dir-for, STATIC_LIBRARIES,libm
 	$(generate-sysroot-lib)
 
 $(TARGET_SYSROOT_LIB)olibc.a: $(call intermediates-dir-for, STATIC_LIBRARIES,olibc,)/olibc.a
+	$(generate-sysroot-lib)
+
+$(TARGET_SYSROOT_LIB)libthread_db.a: $(call intermediates-dir-for, STATIC_LIBRARIES,olibc,)/olibc.a
 	$(generate-sysroot-lib)
 
 $(TARGET_SYSROOT_LIB)libolibc.%: $(TARGET_SYSROOT_LIB)olibc.%
