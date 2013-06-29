@@ -1,6 +1,3 @@
-TOOLCHAIN_ROOT := $(OUT_DIR)/toolchain
-TOOLCHAIN_INTERMEDIATES := $(PRODUCT_OUT)/obj/toolchain/
-
 TOOLS := strip as ld ranlib ar nm objcopy objdump addr2line
 
 GCC_WRAPPER_NAME := $(TARGET_ARCH)-olibc-linux-gnueabi-gcc

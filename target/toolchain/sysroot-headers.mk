@@ -56,7 +56,7 @@ $(TARGET_SYSROOT_INCLUDE)%: bionic/libstdc++/include/%
 $(TARGET_SYSROOT_INCLUDE)%.h: bionic/libthread_db/include/%.h
 	$(generate-sysroot-header)
 
-sysroot: $(LIBC_HEADERS) $(KERNEL_HEADERS) \
-         $(LIBCXX_HEADERS) $(KERNEL_COMMON_HEADERS) \
-         $(ARCH_HEADERS) $(LIBTHREAD_DB_HEADERS) \
-         $(LIBM_HEADERS) $(LIBM_ARCH_HEADERS)
+$(TARGET_SYSROOT_STMP): $(LIBC_HEADERS) $(KERNEL_HEADERS) \
+                        $(LIBCXX_HEADERS) $(KERNEL_COMMON_HEADERS) \
+                        $(ARCH_HEADERS) $(LIBTHREAD_DB_HEADERS) \
+                        $(LIBM_HEADERS) $(LIBM_ARCH_HEADERS)
