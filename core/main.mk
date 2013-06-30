@@ -78,66 +78,6 @@ include $(BUILD_SYSTEM)/help.mk
 # and host information.
 include $(BUILD_SYSTEM)/config.mk
 
-VERSION_CHECK_SEQUENCE_NUMBER := 3
--include $(OUT_DIR)/versions_checked.mk
-ifneq ($(VERSION_CHECK_SEQUENCE_NUMBER),$(VERSIONS_CHECKED))
-
-$(info Checking build tools versions...)
-
-ifneq ($(HOST_OS),windows)
-ifneq ($(HOST_OS)-$(HOST_ARCH),darwin-ppc)
-# check for a case sensitive file system
-ifneq (a,$(shell mkdir -p $(OUT_DIR) ; \
-                echo a > $(OUT_DIR)/casecheck.txt; \
-                    echo B > $(OUT_DIR)/CaseCheck.txt; \
-                cat $(OUT_DIR)/casecheck.txt))
-$(warning ************************************************************)
-$(warning You are building on a case-insensitive filesystem.)
-$(warning Please move your source tree to a case-sensitive filesystem.)
-$(warning ************************************************************)
-$(error Case-insensitive filesystems not supported)
-endif
-endif
-endif
-
-# Make sure that there are no spaces in the absolute path; the
-# build system can't deal with them.
-ifneq ($(words $(shell pwd)),1)
-$(warning ************************************************************)
-$(warning You are building in a directory whose absolute path contains)
-$(warning a space character:)
-$(warning $(space))
-$(warning "$(shell pwd)")
-$(warning $(space))
-$(warning Please move your source tree to a path that does not contain)
-$(warning any spaces.)
-$(warning ************************************************************)
-$(error Directory names containing spaces not supported)
-endif
-
-ifeq (darwin,$(HOST_OS))
-GCC_REALPATH = $(realpath $(shell which $(HOST_CC)))
-ifneq ($(findstring llvm-gcc,$(GCC_REALPATH)),)
-  # Using LLVM GCC results in a non functional emulator due to it
-  # not honouring global register variables
-  $(warning ****************************************)
-  $(warning * gcc is linked to llvm-gcc which will *)
-  $(warning * not create a useable emulator.       *)
-  $(warning ****************************************)
-  BUILD_EMULATOR := false
-else
-  BUILD_EMULATOR := true
-endif
-else   # HOST_OS is not darwin
-  BUILD_EMULATOR := true
-endif  # HOST_OS is darwin
-
-$(shell echo 'VERSIONS_CHECKED := $(VERSION_CHECK_SEQUENCE_NUMBER)' \
-        > $(OUT_DIR)/versions_checked.mk)
-$(shell echo 'BUILD_EMULATOR := $(BUILD_EMULATOR)' \
-        >> $(OUT_DIR)/versions_checked.mk)
-endif
-
 # These are the modifier targets that don't do anything themselves, but
 # change the behavior of the build.
 # (must be defined before including definitions.make)
