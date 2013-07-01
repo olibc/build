@@ -87,3 +87,28 @@ ifeq ($(SINGLE_BINARY_SUPPORT),true)
 else
   DYNAMIC_LINKER:=/system/bin/linker
 endif
+
+# -----------------------------------------------------------------
+# Android build system hack
+#
+
+TARGET_ARCH := $(shell echo $(TARGET_ARCH))
+
+ifeq ($(TARGET_ARCH),arm)
+  ifeq ($(ARCH_ARM_HAVE_NEON),true)
+    TARGET_PRODUCT=mini_armv7a_neon
+  else
+    TARGET_PRODUCT=mini_armv7a
+  endif
+endif
+
+ifeq ($(TARGET_ARCH),mips)
+  TARGET_PRODUCT=mini_mips
+endif
+
+ifeq ($(TARGET_ARCH),x86)
+  TARGET_PRODUCT=mini_x86
+endif
+
+TARGET_BUILD_VARIANT=userdebug
+TARGET_BUILD_TYPE=release

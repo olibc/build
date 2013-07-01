@@ -621,11 +621,6 @@ samplecode: $(sample_APKS_COLLECTION)
 .PHONY: findbugs
 findbugs: $(INTERNAL_FINDBUGS_HTML_TARGET) $(INTERNAL_FINDBUGS_XML_TARGET)
 
-.PHONY: clean
-clean:
-	@rm -rf $(OUT_DIR)
-	@echo "Entire build directory removed."
-
 .PHONY: clobber
 clobber: clean
 

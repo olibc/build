@@ -1,0 +1,33 @@
+CONFIG:=.config
+-include $(CONFIG)
+
+include build/core/olibc.mk
+
+# Let `config`, `distclean` and `clean` get fast response!
+FASTMAKE := $(filter config distclean clean, $(MAKECMDGOALS))
+
+ifeq ($(FASTMAKE),)
+  ifneq (,$(wildcard $(CONFIG)))
+    include build/core/main.mk
+  else
+    all: config
+  endif
+endif
+
+KCONFIG_DIR=$(PWD)/external/kconfig
+MCONF=mconf
+
+clean:
+	rm -rf $(OUT_DIR)
+
+distclean: clean
+	make -C $(KCONFIG_DIR) -f Makefile.olibc distclean
+	rm -f $(CONFIG)
+
+$(KCONFIG_DIR)/$(MCONF):
+	cd $(KCONFIG_DIR) && \
+	  make -f Makefile.olibc mconf obj=`pwd` \
+	  CC="gcc" HOSTCC="gcc" LKC_GENPARSER=1
+
+config: $(KCONFIG_DIR)/$(MCONF)
+	$(KCONFIG_DIR)/$(MCONF) bionic/Config.in
