@@ -5,11 +5,13 @@ TOOLCHAINS_INSTALL_STMP := $(TOOLCHAIN_INTERMEDIATES)stmp-install
 
 TOOLCHAINS_SOURCE := binutils cloog gcc gdb gmp mpc mpfr ppl isl expat
 
-TOOLCHAINS_SOURCE_PREFIX_STMP := $(TOOLCHAIN_INTERMEDIATES)stmp-source/
-TOOLCHAINS_SOURCE_STMPS := $(addprefix $(TOOLCHAINS_SOURCE_PREFIX_STMP), \
+TOOLCHAINS_SOURCE_PREFIX := toolchain/
+TOOLCHAINS_SOURCE_PATH := $(addprefix $(TOOLCHAINS_SOURCE_PREFIX), \
                                       $(TOOLCHAINS_SOURCE) build)
 TOOLCHAIN_SOURCE_INTERMEDIATES := $(addprefix $(TOOLCHAIN_INTERMEDIATES), \
                                               $(TOOLCHAINS_SOURCE))
+
+PWD:=$(shell pwd)
 
 TOOLCHAIN_GCC_VERSION := 4.8
 TOOLCHAIN_GDB_VERSION := 7.6
@@ -51,24 +53,20 @@ $(TOOLCHAINS_BUILD_STMP): $(TOOLCHAINS_CONFIG_STMP)
 	cd $(TOOLCHAIN_BUILD_INTERMEDIATES) && $(MAKE) build
 	touch $@
 
-$(TOOLCHAINS_CONFIG_STMP): $(TOOLCHAINS_SOURCE_STMPS) \
+$(TOOLCHAINS_CONFIG_STMP): $(TOOLCHAINS_SOURCE_PATH) \
                            $(TARGET_SYSROOT_STMP) \
                            $(OLIBC_CONF)
 	mkdir -p $(dir $@)
 	cd $(TOOLCHAIN_BUILD_INTERMEDIATES) && \
-	./configure $(TOOLCHAIN_CONFIG_ARGS)
+	$(PWD)/toolchain/build/configure $(TOOLCHAIN_CONFIG_ARGS)
 	touch $@
 
-$(TOOLCHAIN_INTERMEDIATES)stmp-source/build:
+toolchain/build:
 	mkdir -p $(dir $@)
-	git clone git@github.com:olibc/toolchain-build.git \
-	    $(TOOLCHAIN_INTERMEDIATES)/build
-	touch $@
+	git clone git@github.com:olibc/toolchain-build.git $@
 
-$(TOOLCHAIN_INTERMEDIATES)stmp-source/%:
+toolchain/%:
 	mkdir -p $(dir $@)
-	git clone https://android.googlesource.com/toolchain/$(notdir $@) \
-	    $(TOOLCHAIN_INTERMEDIATES)/$(notdir $@)
-	touch $@
+	git clone https://android.googlesource.com/toolchain/$(notdir $@) $@
 
 standalone-toolchain: $(STANDALONGE_TOOLCAHIN_GOAL)
