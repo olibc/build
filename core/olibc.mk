@@ -65,21 +65,9 @@ endif
 
 # -----------------------------------------------------------------
 
-OLIBC_CFLAGS += $(shell echo $(EXTRA_OLIBC_CFLAGS))
-OLIBC_CPPFLAGS += $(shell echo $(EXTRA_OLIBC_CPPFLAGS))
-OLIBC_LDFLAGS += $(shell echo $(EXTRA_OLIBC_LDFLAGS))
-
-# -----------------------------------------------------------------
-#
-# This hack is for prevent Makefile dependency broken when OUT_DIR is set
-#
-# - kconf will generate string along with quote but it might break
-#   Makefile dependency due to the fact that its dependency is generated
-#   by the compiler which is not specified with quote.
-#
-ifneq (,$(strip $(OUT_DIR)))
-  OUT_DIR := $(shell echo $(OUT_DIR))
-endif
+OLIBC_CFLAGS += $(EXTRA_OLIBC_CFLAGS)
+OLIBC_CPPFLAGS += $(EXTRA_OLIBC_CPPFLAGS)
+OLIBC_LDFLAGS += $(EXTRA_OLIBC_LDFLAGS)
 
 # -----------------------------------------------------------------
 ifeq ($(SINGLE_BINARY_SUPPORT),true)
@@ -92,7 +80,7 @@ endif
 # Android build system hack
 #
 
-TARGET_ARCH := $(shell echo $(TARGET_ARCH))
+TARGET_ARCH := $(TARGET_ARCH)
 
 ifeq ($(TARGET_ARCH),arm)
   ifeq ($(ARCH_ARM_HAVE_NEON),true)
