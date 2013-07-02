@@ -41,6 +41,6 @@ ifeq ($(OLIBC_GCC_WRAPPER),true)
 PRODUCT_PACKAGES += gcc-wrapper
 endif
 
-ifeq ($(OLIBC_STANDALONG_TOOLCHAIN),true)
+ifeq ($(OLIBC_STANDALONE_TOOLCHAIN),true)
 PRODUCT_PACKAGES += standalone-toolchain
 endif
