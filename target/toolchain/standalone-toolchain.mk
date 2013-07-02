@@ -26,6 +26,13 @@ TOOLCHAIN_EXPAT_VERSION := 2.0.1
 TOOLCHAIN_PREFIX := $(PWD)/$(TOOLCHAIN_ROOT)
 TOOLCHAIN_SYSROOT := $(PWD)/$(TARGET_SYSROOT)
 
+# We only checkout certain version for save hard disk space
+# and speed up the checkout time
+TOOLCHAINS_SOURCE_PATH += \
+  toolchain/gcc/gcc-$(TOOLCHAIN_GCC_VERSION) \
+  toolchain/binutils/binutils-$(TOOLCHAIN_BINTUILS_VERSION) \
+
+
 TOOLCHAIN_CONFIG_ARGS := \
   --target=arm-linux-androideabi \
   --prefix=$(TOOLCHAIN_PREFIX) \
@@ -64,6 +71,23 @@ $(TOOLCHAINS_CONFIG_STMP): $(TOOLCHAINS_SOURCE_PATH) \
 toolchain/build:
 	mkdir -p $(dir $@)
 	git clone git@github.com:olibc/toolchain-build.git $@
+
+toolchain/gcc:
+	mkdir -p $(dir $@)
+	git clone --bare https://android.googlesource.com/toolchain/gcc $@/.git
+
+toolchain/gcc/gcc-%: toolchain/gcc
+	cd toolchain/gcc && \
+	   git --work-tree=. checkout HEAD -- $(notdir $@)
+
+toolchain/binutils:
+	mkdir -p $(dir $@)
+	git clone --bare https://android.googlesource.com/toolchain/binutils $@/.git
+
+toolchain/binutils/binutils-%: toolchain/binutils
+	cd toolchain/binutils && \
+	  git --work-tree=. checkout HEAD -- $(notdir $@)
+
 
 toolchain/%:
 	mkdir -p $(dir $@)
