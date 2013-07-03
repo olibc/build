@@ -63,7 +63,7 @@ $(TOOLCHAINS_BUILD_STMP): $(TOOLCHAINS_CONFIG_STMP)
 $(TOOLCHAINS_CONFIG_STMP): $(TOOLCHAINS_SOURCE_PATH) \
                            $(TARGET_SYSROOT_STMP) \
                            $(OLIBC_CONF)
-	mkdir -p $(dir $@)
+	mkdir -p $(dir $@) $(TOOLCHAIN_BUILD_INTERMEDIATES)
 	cd $(TOOLCHAIN_BUILD_INTERMEDIATES) && \
 	$(PWD)/toolchain/build/configure $(TOOLCHAIN_CONFIG_ARGS)
 	touch $@
