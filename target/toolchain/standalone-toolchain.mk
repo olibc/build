@@ -53,6 +53,13 @@ TOOLCHAIN_CONFIG_ARGS := \
   --enable-graphite \
   --enable-lto \
 
+
+ifneq ($(PREDEFINE_ANDROID_MARCO),true)
+TOOLCHAIN_CONFIG_ARGS += \
+  --with-specs='%{!D__ANDROID__:-U__ANDROID__}' \
+
+endif
+
 STANDALONGE_TOOLCAHIN_GOAL := $(TOOLCHAINS_INSTALL_STMP) \
                               $(CC_WRAPPER)
 

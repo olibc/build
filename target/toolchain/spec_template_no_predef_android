@@ -4,7 +4,7 @@
 %rename cpp_options old_cpp_options
 
 *cpp_options:
-%(old_cpp_options) %{!U__ANDROID__:-D__ANDROID__}
+%(old_cpp_options) %{!D__ANDROID__:-U__ANDROID__}
 
 *asm_options:
 %(old_asm_options) $asm_options
@@ -14,8 +14,9 @@
 %{!fno-pic:%{!fno-PIC:%{!fpic:%{!fPIC: -fpic}}}}
 
 *cc1_options:
-%{!U__ANDROID__:-D__ANDROID__} \
-%(old_cc1_options) $cc1_options
+%{!D__ANDROID__:-U__ANDROID__} \
+%(old_cc1_options) \
+$cc1_options
 
 *cc1plus:
 %{!fexceptions:%{!fno-exceptions: -fno-exceptions}} \

@@ -14,7 +14,11 @@ TOOL_WRAPPERS := $(addprefix $(TOOLCHAIN_ROOT)/bin/$(TARGET_ARCH)-olibc-linux-gn
 GCC_CFLAGS := $(TOOLCHAIN_INTERMEDIATES)/gcc_default_cflags
 GCC_CPPFLAGS := $(TOOLCHAIN_INTERMEDIATES)/gcc_default_cxxflags
 GCC_LDFLAGS := $(TOOLCHAIN_INTERMEDIATES)/gcc_default_ldflags
-GCC_SPEC_TEMPLATE := build/target/toolchain/spec_template
+ifeq ($(PREDEFINE_ANDROID_MARCO),true)
+  GCC_SPEC_TEMPLATE := build/target/toolchain/spec_template
+else
+  GCC_SPEC_TEMPLATE := build/target/toolchain/spec_template_no_predef_android
+endif
 GCC_SPEC_GENERATER := build/target/toolchain/gen_spec.py
 GCC_WRAPPER_TEMPLATE := build/target/toolchain/wrapper_template
 GCC_WRAPPER_GENERATER := build/target/toolchain/gen_wrapper.py
