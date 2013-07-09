@@ -50,6 +50,8 @@ TOOLCHAIN_CONFIG_ARGS := \
   --with-cloog-version=$(TOOLCHAIN_CLOOG_VERSION) \
   --with-expat-version=$(TOOLCHAIN_EXPAT_VERSION) \
   --with-gold-version=$(TOOLCHAIN_GOLD_VERSION) \
+  --enable-graphite \
+  --enable-lto \
 
 STANDALONGE_TOOLCAHIN_GOAL := $(TOOLCHAINS_INSTALL_STMP) \
                               $(CC_WRAPPER)
