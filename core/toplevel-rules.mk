@@ -1,6 +1,3 @@
-CONFIG:=.config
--include $(CONFIG)
-
 include build/core/olibc.mk
 
 # Let `config`, `distclean` and `clean` get fast response!
