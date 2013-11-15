@@ -15,6 +15,7 @@ KCONFIG_DIR=$(PWD)/external/kconfig
 MCONF=mconf
 
 clean:
+	@echo Cleaning...
 	$(shell test -d $(OUT_DIR) && rm -rf $(OUT_DIR))
 
 distclean: clean
