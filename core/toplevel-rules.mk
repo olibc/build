@@ -15,16 +15,20 @@ KCONFIG_DIR=$(PWD)/external/kconfig
 MCONF=mconf
 
 clean:
-	rm -rf $(OUT_DIR)
+	$(shell test -d $(OUT_DIR) && rm -rf $(OUT_DIR))
 
 distclean: clean
-	make -C $(KCONFIG_DIR) -f Makefile.olibc distclean
 	rm -f $(CONFIG)
 
-$(KCONFIG_DIR)/$(MCONF):
-	cd $(KCONFIG_DIR) && \
-	  make -f Makefile.olibc mconf obj=`pwd` \
-	  CC="gcc" HOSTCC="gcc" LKC_GENPARSER=1
+# FIXME: clean up the following to be more consistent
+MCONF_OBJ_PATH = out/host/obj/EXECUTABLES/mconf_intermediates
+out/host/bin/$(MCONF):
+	mkdir -p $(MCONF_OBJ_PATH) $(MCONF_OBJ_PATH)/lxdialog && \
+	make --no-print-directory -C $(KCONFIG_DIR) -f Makefile.olibc mconf \
+	  obj=$(shell pwd)/$(MCONF_OBJ_PATH) \
+	  CC="gcc" HOSTCC="gcc" LKC_GENPARSER=1 && \
+	mkdir -p out/host/bin && \
+	cp -f $(MCONF_OBJ_PATH)/$(MCONF) out/host/bin/$(MCONF)
 
-config: $(KCONFIG_DIR)/$(MCONF)
-	$(KCONFIG_DIR)/$(MCONF) bionic/Config.in
+config: out/host/bin/$(MCONF)
+	out/host/bin/$(MCONF) bionic/Config.in
