@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2010 The Android Open Source Project
+# Copyright (C) 2006 The Android Open Source Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,24 +14,12 @@
 # limitations under the License.
 #
 
-# Configuration for Linux on MIPS.
+# Configuration for Linux on x86_64 as a target.
 # Included by combo/select.mk
 
-# You can set TARGET_ARCH_VARIANT to use an arch version other
-# than mips32r2-fp. Each value should correspond to a file named
-# $(BUILD_COMBOS)/arch/<name>.mk which must contain
-# makefile variable definitions similar to the preprocessor
-# defines in build/core/combo/include/arch/<combo>/AndroidConfig.h. Their
-# purpose is to allow module Android.mk files to selectively compile
-# different versions of code based upon the funtionality and
-# instructions available in a given architecture version.
-#
-# The blocks also define specific arch_variant_cflags, which
-# include defines, and compiler settings for the given architecture
-# version.
-#
+# Provide a default variant.
 ifeq ($(strip $(TARGET_ARCH_VARIANT)),)
-TARGET_ARCH_VARIANT := mips32r2-fp
+TARGET_ARCH_VARIANT := x86_64
 endif
 
 ifeq ($(strip $(TARGET_GCC_VERSION_EXP)),)
@@ -40,17 +28,22 @@ else
 TARGET_GCC_VERSION := $(TARGET_GCC_VERSION_EXP)
 endif
 
+# Include the arch-variant-specific configuration file.
+# Its role is to define various ARCH_X86_HAVE_XXX feature macros,
+# plus initial values for TARGET_GLOBAL_CFLAGS
+#
 TARGET_ARCH_SPECIFIC_MAKEFILE := $(BUILD_COMBOS)/arch/$(TARGET_ARCH)/$(TARGET_ARCH_VARIANT).mk
 ifeq ($(strip $(wildcard $(TARGET_ARCH_SPECIFIC_MAKEFILE))),)
-$(error Unknown MIPS architecture variant: $(TARGET_ARCH_VARIANT))
+$(error Unknown $(TARGET_ARCH) architecture version: $(TARGET_ARCH_VARIANT))
 endif
 
 include $(TARGET_ARCH_SPECIFIC_MAKEFILE)
 
+
 # You can set TARGET_TOOLS_PREFIX to get gcc from somewhere else
 ifeq ($(strip $(TARGET_TOOLS_PREFIX)),)
-TARGET_TOOLCHAIN_ROOT := prebuilts/gcc/$(HOST_PREBUILT_TAG)/mips/mipsel-linux-android-$(TARGET_GCC_VERSION)
-TARGET_TOOLS_PREFIX := $(TARGET_TOOLCHAIN_ROOT)/bin/mipsel-linux-android-
+TARGET_TOOLCHAIN_ROOT := prebuilts/gcc/$(HOST_PREBUILT_TAG)/x86/x86_64-linux-android-$(TARGET_GCC_VERSION)
+TARGET_TOOLS_PREFIX := $(TARGET_TOOLCHAIN_ROOT)/bin/x86_64-linux-android-
 endif
 
 TARGET_CC := $(TARGET_TOOLS_PREFIX)gcc$(HOST_EXECUTABLE_SUFFIX)
@@ -59,101 +52,27 @@ TARGET_AR := $(TARGET_TOOLS_PREFIX)ar$(HOST_EXECUTABLE_SUFFIX)
 TARGET_OBJCOPY := $(TARGET_TOOLS_PREFIX)objcopy$(HOST_EXECUTABLE_SUFFIX)
 TARGET_LD := $(TARGET_TOOLS_PREFIX)ld$(HOST_EXECUTABLE_SUFFIX)
 TARGET_STRIP := $(TARGET_TOOLS_PREFIX)strip$(HOST_EXECUTABLE_SUFFIX)
+
 ifeq ($(TARGET_BUILD_VARIANT),user)
-    TARGET_STRIP_COMMAND = $(TARGET_STRIP) --strip-all $< -o $@
+TARGET_STRIP_COMMAND = $(TARGET_STRIP) --strip-debug $< -o $@
 else
-    TARGET_STRIP_COMMAND = $(TARGET_STRIP) --strip-all $< -o $@ && \
-        $(TARGET_OBJCOPY) --add-gnu-debuglink=$< $@
+TARGET_STRIP_COMMAND = $(TARGET_STRIP) --strip-debug $< -o $@ && \
+	$(TARGET_OBJCOPY) --add-gnu-debuglink=$< $@
+endif
+
+ifneq ($(wildcard $(TARGET_CC)),)
+TARGET_LIBGCC := \
+	$(shell $(TARGET_CC) -m64 -print-file-name=libgcc.a)
+target_libgcov := $(shell $(TARGET_CC) $(TARGET_GLOBAL_CFLAGS) \
+	-print-file-name=libgcov.a)
 endif
 
 TARGET_NO_UNDEFINED_LDFLAGS := -Wl,--no-undefined
-
-TARGET_mips_CFLAGS :=	-O2 \
-			-fomit-frame-pointer \
-			-fno-strict-aliasing    \
-			-funswitch-loops
-
-# Set FORCE_MIPS_DEBUGGING to "true" in your buildspec.mk
-# or in your environment to gdb debugging easier.
-# Don't forget to do a clean build.
-ifeq ($(FORCE_MIPS_DEBUGGING),true)
-  TARGET_mips_CFLAGS += -fno-omit-frame-pointer
-endif
-
-TARGET_GLOBAL_CFLAGS += \
-			$(TARGET_mips_CFLAGS) \
-			-Ulinux -U__unix -U__unix__ -Umips \
-			-fpic -fPIE\
-			-ffunction-sections \
-			-fdata-sections \
-			-Wa,--noexecstack \
-			-Werror=format-security \
-			-D_FORTIFY_SOURCE=2 \
-			$(arch_variant_cflags)
-
-android_config_h := $(call select-android-config-h,linux-mips)
-TARGET_ANDROID_CONFIG_CFLAGS := -include $(android_config_h) -I $(dir $(android_config_h))
-
-# This warning causes dalvik not to build with gcc 4.6+ and -Werror.
-# We cannot turn it off blindly since the option is not available
-# in gcc-4.4.x.
-ifneq ($(filter 4.6 4.6.% 4.7 4.7.%, $(TARGET_GCC_VERSION)),)
-TARGET_GLOBAL_CFLAGS += -Wno-unused-but-set-variable \
-                        -fno-strict-volatile-bitfields
-endif
-
-# This is to avoid the dreaded warning compiler message:
-#   note: the mangling of 'va_list' has changed in GCC 4.4
-#
-# The fact that the mangling changed does not affect the NDK ABI
-# very fortunately (since none of the exposed APIs used va_list
-# in their exported C++ functions). Also, GCC 4.5 has already
-# removed the warning from the compiler.
-#
-TARGET_GLOBAL_CFLAGS += -Wno-psabi
-
-ifneq ($(ARCH_MIPS_PAGE_SHIFT),)
-TARGET_GLOBAL_CFLAGS += -DPAGE_SHIFT=$(ARCH_MIPS_PAGE_SHIFT)
-endif
-
-TARGET_GLOBAL_LDFLAGS += \
-			-Wl,-z,noexecstack \
-			-Wl,-z,relro \
-			-Wl,-z,now \
-			-Wl,--warn-shared-textrel \
-			$(arch_variant_ldflags)
-
-TARGET_GLOBAL_CPPFLAGS += -fvisibility-inlines-hidden
-
-# More flags/options can be added here
-TARGET_RELEASE_CFLAGS := \
-			-DNDEBUG \
-			-g \
-			-Wstrict-aliasing=2 \
-			-fgcse-after-reload \
-			-frerun-cse-after-loop \
-			-frename-registers
 
 libc_root := bionic/libc
 libm_root := bionic/libm
 libstdc++_root := bionic/libstdc++
 libthread_db_root := bionic/libthread_db
-
-
-## on some hosts, the target cross-compiler is not available so do not run this command
-ifneq ($(wildcard $(TARGET_CC)),)
-# We compile with the global cflags to ensure that
-# any flags which affect libgcc are correctly taken
-# into account.
-TARGET_LIBGCC := \
-  $(shell $(TARGET_CC) $(TARGET_GLOBAL_CFLAGS) -print-file-name=libgcc.a)
-LIBGCC_EH := $(shell $(TARGET_CC) $(TARGET_GLOBAL_CFLAGS) -print-file-name=libgcc_eh.a)
-ifneq ($(LIBGCC_EH),libgcc_eh.a)
-  TARGET_LIBGCC += $(LIBGCC_EH)
-endif
-target_libgcov := $(shell $(TARGET_CC) $(TARGET_GLOBAL_CFLAGS) \
-        --print-file-name=libgcov.a)
-endif
 
 # Define FDO (Feedback Directed Optimization) options.
 
@@ -183,7 +102,6 @@ else
   endif
 endif
 
-
 # unless CUSTOM_KERNEL_HEADERS is defined, we're going to use
 # symlinks located in out/ to point to the appropriate kernel
 # headers. see 'config/kernel_headers.make' for more details
@@ -197,13 +115,88 @@ else
 endif
 KERNEL_HEADERS := $(KERNEL_HEADERS_COMMON) $(KERNEL_HEADERS_ARCH)
 
+TARGET_GLOBAL_CFLAGS += \
+			-O2 \
+			-Ulinux \
+			-Wa,--noexecstack \
+			-Werror=format-security \
+			-D_FORTIFY_SOURCE=2 \
+			-Wstrict-aliasing=2 \
+			-fPIC -fPIE \
+			-ffunction-sections \
+			-finline-functions \
+			-finline-limit=300 \
+			-fno-inline-functions-called-once \
+			-fno-short-enums \
+			-fstrict-aliasing \
+			-funswitch-loops \
+			-funwind-tables \
+			-fstack-protector \
+			-m64
+
+android_config_h := $(call select-android-config-h,target_linux-x86)
+TARGET_ANDROID_CONFIG_CFLAGS := -include $(android_config_h) -I $(dir $(android_config_h))
+TARGET_GLOBAL_CFLAGS += $(TARGET_ANDROID_CONFIG_CFLAGS)
+
+# XXX: Not sure this is still needed. Must check with our toolchains.
+TARGET_GLOBAL_CPPFLAGS += \
+			-fno-use-cxa-atexit
+
+TARGET_GLOBAL_CFLAGS += $(arch_variant_cflags) \
+			-mstackrealign \
+			-mfpmath=sse
+
+ARCH_X86_HAVE_MMX  := true
+ARCH_X86_HAVE_SSE  := true
+ARCH_X86_HAVE_SSE2 := true
+ARCH_X86_HAVE_SSE3 := true
+
+ifeq ($(ARCH_X86_HAVE_SSSE3),true)   # yes, really SSSE3, not SSE3!
+    TARGET_GLOBAL_CFLAGS += -DUSE_SSSE3 -mssse3
+endif
+ifeq ($(ARCH_X86_HAVE_SSE4),true)
+    TARGET_GLOBAL_CFLAGS += -msse4
+endif
+ifeq ($(ARCH_X86_HAVE_SSE4_1),true)
+    TARGET_GLOBAL_CFLAGS += -msse4.1
+endif
+ifeq ($(ARCH_X86_HAVE_SSE4_2),true)
+    TARGET_GLOBAL_CFLAGS += -msse4.2
+endif
+ifeq ($(ARCH_X86_HAVE_AVX),true)
+    TARGET_GLOBAL_CFLAGS += -mavx
+endif
+ifeq ($(ARCH_X86_HAVE_AES_NI),true)
+    TARGET_GLOBAL_CFLAGS += -maes
+endif
+
+# XXX: This flag is probably redundant. I believe our toolchain always sets
+# it by default. Consider for removal.
+#
+TARGET_GLOBAL_CFLAGS += -mbionic
+
+# XXX: This flag is probably redundant. The macro should be defined by our
+# toolchain binaries automatically (as a compiler built-in).
+# Check with: $BINPREFIX-gcc -dM -E < /dev/null
+#
+# Consider for removal.
+#
+TARGET_GLOBAL_CFLAGS += -D__ANDROID__
+
+TARGET_GLOBAL_LDFLAGS += -m64
+
+TARGET_GLOBAL_LDFLAGS += -Wl,-z,noexecstack
+TARGET_GLOBAL_LDFLAGS += -Wl,-z,relro -Wl,-z,now
+TARGET_GLOBAL_LDFLAGS += -Wl,--warn-shared-textrel
+TARGET_GLOBAL_LDFLAGS += -Wl,--gc-sections
+
 TARGET_C_INCLUDES := \
-	$(libc_root)/arch-mips/include \
+	$(libc_root)/arch-x86_64/include \
 	$(libc_root)/include \
 	$(libstdc++_root)/include \
 	$(KERNEL_HEADERS) \
 	$(libm_root)/include \
-	$(libm_root)/include/mips \
+	$(libm_root)/include/amd64 \
 	$(libthread_db_root)/include
 
 TARGET_CRTBEGIN_STATIC_O := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/crtbegin_static.o
@@ -215,19 +208,15 @@ TARGET_CRTEND_SO_O := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/crtend_so.o
 
 TARGET_STRIP_MODULE:=true
 
-ifeq ($(SINGLE_BINARY_SUPPORT),true)
-TARGET_DEFAULT_SYSTEM_SHARED_LIBRARIES := olibc libstdc++
-else
 TARGET_DEFAULT_SYSTEM_SHARED_LIBRARIES := libc libstdc++ libm
-endif
 
 TARGET_CUSTOM_LD_COMMAND := true
-
 define transform-o-to-shared-lib-inner
 $(hide) $(PRIVATE_CXX) \
-	-nostdlib -Wl,-soname,$(notdir $@) \
-	-Wl,--gc-sections \
-	-Wl,-shared,-Bsymbolic \
+	$(PRIVATE_TARGET_GLOBAL_LDFLAGS) \
+	 -nostdlib -Wl,-soname,$(notdir $@) \
+	 -shared -Bsymbolic \
+	$(TARGET_GLOBAL_CFLAGS) \
 	$(PRIVATE_TARGET_GLOBAL_LD_DIRS) \
 	$(if $(filter true,$(PRIVATE_NO_CRT)),,$(PRIVATE_TARGET_CRTBEGIN_SO_O)) \
 	$(PRIVATE_ALL_OBJECTS) \
@@ -241,17 +230,18 @@ $(hide) $(PRIVATE_CXX) \
 	$(PRIVATE_TARGET_FDO_LIB) \
 	$(call normalize-target-libraries,$(PRIVATE_ALL_SHARED_LIBRARIES)) \
 	-o $@ \
-	$(PRIVATE_TARGET_GLOBAL_LDFLAGS) \
 	$(PRIVATE_LDFLAGS) \
 	$(PRIVATE_TARGET_LIBGCC) \
 	$(if $(filter true,$(PRIVATE_NO_CRT)),,$(PRIVATE_TARGET_CRTEND_SO_O))
 endef
 
 define transform-o-to-executable-inner
-$(hide) $(PRIVATE_CXX) -nostdlib -Bdynamic -fPIE -pie \
-	-Wl,-dynamic-linker,$(strip $(DYNAMIC_LINKER)) \
-	-Wl,--gc-sections \
+$(hide) $(PRIVATE_CXX) \
+	$(PRIVATE_TARGET_GLOBAL_LDFLAGS) \
+	-nostdlib -Bdynamic \
+	-Wl,-dynamic-linker,/system/bin/linker \
 	-Wl,-z,nocopyreloc \
+	-fPIE -pie \
 	$(PRIVATE_TARGET_GLOBAL_LD_DIRS) \
 	-Wl,-rpath-link=$(TARGET_OUT_INTERMEDIATE_LIBRARIES) \
 	$(if $(filter true,$(PRIVATE_NO_CRT)),,$(PRIVATE_TARGET_CRTBEGIN_DYNAMIC_O)) \
@@ -266,28 +256,25 @@ $(hide) $(PRIVATE_CXX) -nostdlib -Bdynamic -fPIE -pie \
 	$(PRIVATE_TARGET_FDO_LIB) \
 	$(call normalize-target-libraries,$(PRIVATE_ALL_SHARED_LIBRARIES)) \
 	-o $@ \
-	$(PRIVATE_TARGET_GLOBAL_LDFLAGS) \
 	$(PRIVATE_LDFLAGS) \
 	$(PRIVATE_TARGET_LIBGCC) \
 	$(if $(filter true,$(PRIVATE_NO_CRT)),,$(PRIVATE_TARGET_CRTEND_O))
 endef
 
 define transform-o-to-static-executable-inner
-$(hide) $(PRIVATE_CXX) -nostdlib -Bstatic \
-	-Wl,--gc-sections \
+$(hide) $(PRIVATE_CXX) \
+	$(PRIVATE_TARGET_GLOBAL_LDFLAGS) \
+	-nostdlib -Bstatic \
 	-o $@ \
 	$(PRIVATE_TARGET_GLOBAL_LD_DIRS) \
 	$(if $(filter true,$(PRIVATE_NO_CRT)),,$(PRIVATE_TARGET_CRTBEGIN_STATIC_O)) \
-	$(PRIVATE_TARGET_GLOBAL_LDFLAGS) \
 	$(PRIVATE_LDFLAGS) \
 	$(PRIVATE_ALL_OBJECTS) \
 	-Wl,--whole-archive \
 	$(call normalize-target-libraries,$(PRIVATE_ALL_WHOLE_STATIC_LIBRARIES)) \
 	-Wl,--no-whole-archive \
-	$(call normalize-target-libraries,$(filter-out %libc_nomalloc.a,$(filter-out %libc.a,$(PRIVATE_ALL_STATIC_LIBRARIES)))) \
 	-Wl,--start-group \
-	$(call normalize-target-libraries,$(filter %libc.a,$(PRIVATE_ALL_STATIC_LIBRARIES))) \
-	$(call normalize-target-libraries,$(filter %libc_nomalloc.a,$(PRIVATE_ALL_STATIC_LIBRARIES))) \
+	$(call normalize-target-libraries,$(PRIVATE_ALL_STATIC_LIBRARIES)) \
 	$(PRIVATE_TARGET_FDO_LIB) \
 	$(PRIVATE_TARGET_LIBGCC) \
 	-Wl,--end-group \
