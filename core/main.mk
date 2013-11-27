@@ -81,7 +81,7 @@ include $(BUILD_SYSTEM)/config.mk
 # These are the modifier targets that don't do anything themselves, but
 # change the behavior of the build.
 # (must be defined before including definitions.make)
-INTERNAL_MODIFIER_TARGETS := showcommands checkbuild all incrementaljavac
+INTERNAL_MODIFIER_TARGETS := showcommands all incrementaljavac
 
 .PHONY: incrementaljavac
 incrementaljavac: ;
@@ -110,8 +110,8 @@ include $(BUILD_SYSTEM)/definitions.mk
 ifneq ($(filter user userdebug eng,$(MAKECMDGOALS)),)
 $(info ***************************************************************)
 $(info ***************************************************************)
-$(info Do not pass '$(filter user userdebug eng tests,$(MAKECMDGOALS))' on \
-		the make command line.)
+$(info Do not pass '$(filter user userdebug eng,$(MAKECMDGOALS))' on \
+       the make command line.)
 $(info Set TARGET_BUILD_VARIANT in buildspec.mk, or use lunch or)
 $(info choosecombo.)
 $(info ***************************************************************)
@@ -174,12 +174,6 @@ ifeq ($(TARGET_BUILD_VARIANT),eng)
 tags_to_install := debug eng
 endif
 
-## tests ##
-
-ifeq ($(TARGET_BUILD_VARIANT),tests)
-tags_to_install := debug eng tests
-endif
-
 ## sdk ##
 
 ifdef is_sdk_build
@@ -188,7 +182,7 @@ ifdef is_sdk_build
 sdk_repo_goal := $(strip $(filter sdk_repo,$(MAKECMDGOALS)))
 MAKECMDGOALS := $(strip $(filter-out sdk_repo,$(MAKECMDGOALS)))
 
-ifneq ($(words $(filter-out $(INTERNAL_MODIFIER_TARGETS),$(MAKECMDGOALS))),1)
+ifneq ($(words $(filter-out $(INTERNAL_MODIFIER_TARGETS) checkbuild,$(MAKECMDGOALS))),1)
 $(error The 'sdk' target may not be specified with any other targets)
 endif
 
@@ -219,26 +213,11 @@ endef
 endif
 
 
-# If they only used the modifier goals (showcommands, checkbuild), we'll actually
+# If they only used the modifier goals (showcommands, etc), we'll actually
 # build the default target.
 ifeq ($(filter-out $(INTERNAL_MODIFIER_TARGETS),$(MAKECMDGOALS)),)
 .PHONY: $(INTERNAL_MODIFIER_TARGETS)
 $(INTERNAL_MODIFIER_TARGETS): $(DEFAULT_GOAL)
-endif
-
-# These targets are going to delete stuff, don't bother including
-# the whole directory tree if that's all we're going to do
-ifeq ($(MAKECMDGOALS),clean)
-dont_bother := true
-endif
-ifeq ($(MAKECMDGOALS),clobber)
-dont_bother := true
-endif
-ifeq ($(MAKECMDGOALS),dataclean)
-dont_bother := true
-endif
-ifeq ($(MAKECMDGOALS),installclean)
-dont_bother := true
 endif
 
 # Bring in all modules that need to be built.
@@ -305,7 +284,7 @@ else # ONE_SHOT_MAKEFILE
 # Can't use first-makefiles-under here because
 # --mindepth=2 makes the prunes not work.
 subdir_makefiles := \
-	$(shell build/tools/findleaves.py --prune=out --prune=.repo --prune=.git $(subdirs) Android.mk)
+	$(shell build/tools/findleaves.py --prune=$(OUT_DIR) --prune=.repo --prune=.git $(subdirs) Android.mk)
 
 include $(subdir_makefiles)
 
@@ -350,18 +329,41 @@ CUSTOM_MODULES := \
 # BUG: the system image won't know to depend on modules that are
 # brought in as requirements of other modules.
 define add-required-deps
-$(1): $(2)
+$(1): | $(2)
 endef
 $(foreach m,$(ALL_MODULES), \
   $(eval r := $(ALL_MODULES.$(m).REQUIRED)) \
   $(if $(r), \
     $(eval r := $(call module-installed-files,$(r))) \
-    $(eval $(call add-required-deps,$(ALL_MODULES.$(m).INSTALLED),$(r))) \
+    $(eval t_m := $(filter $(TARGET_OUT_ROOT)/%, $(ALL_MODULES.$(m).INSTALLED))) \
+    $(eval h_m := $(filter $(HOST_OUT_ROOT)/%, $(ALL_MODULES.$(m).INSTALLED))) \
+    $(eval t_r := $(filter $(TARGET_OUT_ROOT)/%, $(r))) \
+    $(eval h_r := $(filter $(HOST_OUT_ROOT)/%, $(r))) \
+    $(if $(t_m), $(eval $(call add-required-deps, $(t_m),$(t_r)))) \
+    $(if $(h_m), $(eval $(call add-required-deps, $(h_m),$(h_r)))) \
    ) \
  )
+
+t_m :=
+h_m :=
+t_r :=
+h_r :=
+
+# Resolve the dependencies on shared libraries.
+$(foreach m,$(TARGET_DEPENDENCIES_ON_SHARED_LIBRARIES), \
+  $(eval p := $(subst :,$(space),$(m))) \
+  $(eval r := $(filter $(TARGET_OUT_ROOT)/%,$(call module-installed-files,\
+    $(subst $(comma),$(space),$(lastword $(p)))))) \
+  $(eval $(call add-required-deps,$(word 2,$(p)),$(r))))
+$(foreach m,$(HOST_DEPENDENCIES_ON_SHARED_LIBRARIES), \
+  $(eval p := $(subst :,$(space),$(m))) \
+  $(eval r := $(filter $(HOST_OUT_ROOT)/%,$(call module-installed-files,\
+    $(subst $(comma),$(space),$(lastword $(p)))))) \
+  $(eval $(call add-required-deps,$(word 2,$(p)),$(r))))
+
 m :=
 r :=
-i :=
+p :=
 add-required-deps :=
 
 # -------------------------------------------------------------------
@@ -393,15 +395,13 @@ else
   product_FILES :=
 endif
 
-# When modules are tagged with debug eng or tests, they are installed
-# for those variants regardless of what the product spec says.
-debug_MODULES := $(sort \
-        $(call get-tagged-modules,debug) \
-        $(call module-installed-files, $(PRODUCTS.$(INTERNAL_PRODUCT).PRODUCT_PACKAGES_DEBUG)) \
-    )
 eng_MODULES := $(sort \
         $(call get-tagged-modules,eng) \
         $(call module-installed-files, $(PRODUCTS.$(INTERNAL_PRODUCT).PRODUCT_PACKAGES_ENG)) \
+    )
+debug_MODULES := $(sort \
+        $(call get-tagged-modules,debug) \
+        $(call module-installed-files, $(PRODUCTS.$(INTERNAL_PRODUCT).PRODUCT_PACKAGES_DEBUG)) \
     )
 tests_MODULES := $(sort \
         $(call get-tagged-modules,tests) \
@@ -511,6 +511,12 @@ files: prebuilt \
 
 .PHONY: checkbuild
 checkbuild: $(modules_to_check)
+ifeq (true,$(ANDROID_BUILD_EVERYTHING_BY_DEFAULT)$(filter $(MAKECMDGOALS),checkbuild))
+droid: checkbuild
+else
+# ANDROID_BUILD_EVERYTHING_BY_DEFAULT not set, or checkbuild is one of the cmd goals.
+checkbuild: droid
+endif
 
 .PHONY: systemtarball
 systemtarball: $(INSTALLED_SYSTEMTARBALL_TARGET)
@@ -523,9 +529,6 @@ droidcore: files \
 # dist_files only for putting your library into the dist directory with a full build.
 .PHONY: dist_files
 
-# Dist for droid if droid is among the cmd goals, or no cmd goal is given.
-ifneq ($(filter droid,$(MAKECMDGOALS))$(filter ||,|$(filter-out $(INTERNAL_MODIFIER_TARGETS),$(MAKECMDGOALS))|),)
-
 ifneq ($(TARGET_BUILD_APPS),)
   # If this build is just for apps, only build apps and not the full system by default.
 
@@ -537,9 +540,14 @@ ifneq ($(TARGET_BUILD_APPS),)
     unbundled_build_modules := $(TARGET_BUILD_APPS)
   endif
 
+  # Dist the installed files if they exist.
   apps_only_installed_files := $(foreach m,$(unbundled_build_modules),$(ALL_MODULES.$(m).INSTALLED))
-  # dist the unbundled app.
   $(call dist-for-goals,apps_only, $(apps_only_installed_files))
+  # For uninstallable modules such as static Java library, we have to dist the built file,
+  # as <module_name>.<suffix>
+  apps_only_dist_built_files := $(foreach m,$(unbundled_build_modules),$(if $(ALL_MODULES.$(m).INSTALLED),,\
+      $(ALL_MODULES.$(m).BUILT):$(m)$(suffix $(ALL_MODULES.$(m).BUILT))))
+  $(call dist-for-goals,apps_only, $(apps_only_dist_built_files))
 
   ifeq ($(EMMA_INSTRUMENT),true)
     $(EMMA_META_ZIP) : $(apps_only_installed_files)
@@ -579,14 +587,6 @@ else # TARGET_BUILD_APPS
 droid: droidcore dist_files
 
 endif # TARGET_BUILD_APPS
-endif # droid in $(MAKECMDGOALS)
-
-
-.PHONY: droid
-
-# phony target that include any targets in $(ALL_MODULES)
-.PHONY: all_modules
-all_modules: $(ALL_MODULES)
 
 .PHONY: docs
 docs: $(ALL_DOCS)
@@ -594,13 +594,26 @@ docs: $(ALL_DOCS)
 .PHONY: sdk
 ALL_SDK_TARGETS := $(INTERNAL_SDK_TARGET)
 sdk: $(ALL_SDK_TARGETS)
-ifneq ($(filter sdk win_sdk,$(MAKECMDGOALS)),)
 $(call dist-for-goals,sdk win_sdk, \
     $(ALL_SDK_TARGETS) \
     $(SYMBOLS_ZIP) \
     $(INSTALLED_BUILD_PROP_TARGET) \
 )
-endif
+
+# umbrella targets to assit engineers in verifying builds
+.PHONY: java native target host java-host java-target native-host native-target \
+        java-host-tests java-target-tests native-host-tests native-target-tests \
+        java-tests native-tests host-tests target-tests
+# some synonyms
+.PHONY: host-java target-java host-native target-native \
+        target-java-tests target-native-tests
+host-java : java-host
+target-java : java-target
+host-native : native-host
+target-native : native-target
+target-java-tests : java-target-tests
+target-native-tests : native-target-tests
+
 
 .PHONY: lintall
 

@@ -114,10 +114,10 @@ TARGET_COPY_OUT_RECOVERY := recovery
 # variables that we need in order to locate the output files.
 include $(BUILD_SYSTEM)/product_config.mk
 
-build_variant := $(filter-out user userdebug eng tests,$(TARGET_BUILD_VARIANT))
+build_variant := $(filter-out eng user userdebug,$(TARGET_BUILD_VARIANT))
 ifneq ($(build_variant)-$(words $(TARGET_BUILD_VARIANT)),-1)
 $(warning bad TARGET_BUILD_VARIANT: $(TARGET_BUILD_VARIANT))
-$(error must be empty or one of: user userdebug eng tests)
+$(error must be empty or one of: eng user userdebug)
 endif
 
 # ---------------------------------------------------------------
@@ -196,6 +196,7 @@ TARGET_OUT_OPTIONAL_EXECUTABLES:= $(TARGET_OUT)/xbin
 TARGET_OUT_SHARED_LIBRARIES:= $(TARGET_OUT)/lib
 TARGET_OUT_JAVA_LIBRARIES:= $(TARGET_OUT)/framework
 TARGET_OUT_APPS:= $(TARGET_OUT)/app
+TARGET_OUT_APPS_PRIVILEGED := $(TARGET_OUT)/priv-app
 TARGET_OUT_KEYLAYOUT := $(TARGET_OUT)/usr/keylayout
 TARGET_OUT_KEYCHARS := $(TARGET_OUT)/usr/keychars
 TARGET_OUT_ETC := $(TARGET_OUT)/etc
@@ -205,12 +206,13 @@ TARGET_OUT_FAKE := $(PRODUCT_OUT)/fake_packages
 TARGET_OUT_DATA := $(PRODUCT_OUT)/$(TARGET_COPY_OUT_DATA)
 TARGET_OUT_DATA_EXECUTABLES:= $(TARGET_OUT_EXECUTABLES)
 TARGET_OUT_DATA_SHARED_LIBRARIES:= $(TARGET_OUT_SHARED_LIBRARIES)
-TARGET_OUT_DATA_JAVA_LIBRARIES:= $(TARGET_OUT_JAVA_LIBRARIES)
+TARGET_OUT_DATA_JAVA_LIBRARIES:= $(TARGET_OUT_DATA)/framework
 TARGET_OUT_DATA_APPS:= $(TARGET_OUT_DATA)/app
 TARGET_OUT_DATA_KEYLAYOUT := $(TARGET_OUT_KEYLAYOUT)
 TARGET_OUT_DATA_KEYCHARS := $(TARGET_OUT_KEYCHARS)
 TARGET_OUT_DATA_ETC := $(TARGET_OUT_ETC)
 TARGET_OUT_DATA_NATIVE_TESTS := $(TARGET_OUT_DATA)/nativetest
+TARGET_OUT_DATA_FAKE := $(TARGET_OUT_DATA)/fake_packages
 
 TARGET_OUT_CACHE := $(PRODUCT_OUT)/cache
 
