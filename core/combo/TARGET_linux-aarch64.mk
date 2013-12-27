@@ -40,6 +40,8 @@ else
 TARGET_GCC_VERSION := $(TARGET_GCC_VERSION_EXP)
 endif
 
+TARGET_IS_64_BIT := true
+
 TARGET_ARCH_SPECIFIC_MAKEFILE := $(BUILD_COMBOS)/arch/$(TARGET_ARCH)/$(TARGET_ARCH_VARIANT).mk
 ifeq ($(strip $(wildcard $(TARGET_ARCH_SPECIFIC_MAKEFILE))),)
 $(error Unknown ARM architecture version: $(TARGET_ARCH_VARIANT))
@@ -75,12 +77,6 @@ android_config_h := $(call select-android-config-h,linux-aarch64)
 
 TARGET_GLOBAL_CFLAGS += \
 			-fpic -fPIE \
-			$(arch_variant_cflags) \
-			-include $(android_config_h) \
-			-I $(dir $(android_config_h))
-
-TARGET_GLOBAL_CFLAGS += \
-			-fpic -fPIE \
 			-ffunction-sections \
 			-fdata-sections \
 			-funwind-tables \
@@ -91,6 +87,9 @@ TARGET_GLOBAL_CFLAGS += \
 			$(arch_variant_cflags) \
 			-include $(android_config_h) \
 			-I $(dir $(android_config_h))
+
+# TODO - remove __ANDROID__ after the next aarch64 toolchain refresh
+TARGET_GLOBAL_CFLAGS += -D__ANDROID__=1
 
 TARGET_GLOBAL_CFLAGS += -fno-strict-volatile-bitfields
 
