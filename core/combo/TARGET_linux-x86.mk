@@ -130,11 +130,10 @@ TARGET_GLOBAL_CFLAGS += \
 			-fno-short-enums \
 			-fstrict-aliasing \
 			-funswitch-loops \
+			-funwind-tables \
 			-fstack-protector \
 			-m32
 
-android_config_h := $(call select-android-config-h,target_linux-x86)
-TARGET_ANDROID_CONFIG_CFLAGS := -include $(android_config_h) -I $(dir $(android_config_h))
 
 # XXX: Not sure this is still needed. Must check with our toolchains.
 TARGET_GLOBAL_CPPFLAGS += \

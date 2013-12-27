@@ -19,12 +19,16 @@
 PRODUCT_PACKAGES += \
         core-libart \
         libart \
-        dex2oat
+        dex2oat \
+        oatdump
 
 # host-only dependencies
 ifeq ($(WITH_HOST_DALVIK),true)
     PRODUCT_PACKAGES += \
         core-libart-hostdex
 endif
+
+# We currently don't suport DEX_PREOPT for art
+DEX_PREOPT_DEFAULT := nostripping
 
 include $(SRC_TARGET_DIR)/product/runtime_common.mk

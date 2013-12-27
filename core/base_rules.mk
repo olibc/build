@@ -141,15 +141,16 @@ intermediates.COMMON := $(call local-intermediates-dir,COMMON)
 ###########################################################
 # Pick a name for the intermediate and final targets
 ###########################################################
-LOCAL_MODULE_STEM := $(strip $(LOCAL_MODULE_STEM))
-ifeq ($(LOCAL_MODULE_STEM),)
+ifndef LOCAL_MODULE_STEM
   LOCAL_MODULE_STEM := $(LOCAL_MODULE)
 endif
-LOCAL_INSTALLED_MODULE_STEM := $(LOCAL_MODULE_STEM)$(LOCAL_MODULE_SUFFIX)
 
-LOCAL_BUILT_MODULE_STEM := $(strip $(LOCAL_BUILT_MODULE_STEM))
-ifeq ($(LOCAL_BUILT_MODULE_STEM),)
-  LOCAL_BUILT_MODULE_STEM := $(LOCAL_INSTALLED_MODULE_STEM)
+ifndef LOCAL_BUILT_MODULE_STEM
+  LOCAL_BUILT_MODULE_STEM := $(LOCAL_MODULE_STEM)$(LOCAL_MODULE_SUFFIX)
+endif
+
+ifndef LOCAL_INSTALLED_MODULE_STEM
+  LOCAL_INSTALLED_MODULE_STEM := $(LOCAL_MODULE_STEM)$(LOCAL_MODULE_SUFFIX)
 endif
 
 # OVERRIDE_BUILT_MODULE_PATH is only allowed to be used by the
@@ -185,9 +186,6 @@ ifneq ($(strip $(aidl_sources)),)
 aidl_java_sources := $(patsubst %.aidl,%.java,$(addprefix $(intermediates.COMMON)/src/, $(aidl_sources)))
 aidl_sources := $(addprefix $(TOP_DIR)$(LOCAL_PATH)/, $(aidl_sources))
 
-ifeq (,$(TARGET_BUILD_APPS))
-LOCAL_AIDL_INCLUDES += $(FRAMEWORKS_BASE_JAVA_SRC_DIRS)
-endif
 aidl_preprocess_import :=
 LOCAL_SDK_VERSION:=$(strip $(LOCAL_SDK_VERSION))
 ifdef LOCAL_SDK_VERSION
@@ -197,6 +195,9 @@ ifeq ($(LOCAL_SDK_VERSION)$(TARGET_BUILD_APPS),current)
 else
   aidl_preprocess_import := $(HISTORICAL_SDK_VERSIONS_ROOT)/$(LOCAL_SDK_VERSION)/framework.aidl
 endif # !current
+else
+# build against the platform.
+LOCAL_AIDL_INCLUDES += $(FRAMEWORKS_BASE_JAVA_SRC_DIRS)
 endif # LOCAL_SDK_VERSION
 $(aidl_java_sources): PRIVATE_AIDL_FLAGS := -b $(addprefix -p,$(aidl_preprocess_import)) -I$(LOCAL_PATH) -I$(LOCAL_PATH)/src $(addprefix -I,$(LOCAL_AIDL_INCLUDES))
 
@@ -335,8 +336,11 @@ else
 endif # java_resource_file_groups
 
 ## PRIVATE java vars ######################################
-
-ifneq ($(strip $(all_java_sources)$(all_res_assets))$(LOCAL_STATIC_JAVA_LIBRARIES),)
+# LOCAL_SOURCE_FILES_ALL_GENERATED is set only if the module does not have static source files,
+# but generated source files in its LOCAL_INTERMEDIATE_SOURCE_DIR.
+# You have to set up the dependency in some other way.
+need_compile_java := $(strip $(all_java_sources)$(all_res_assets))$(LOCAL_STATIC_JAVA_LIBRARIES)$(filter true,$(LOCAL_SOURCE_FILES_ALL_GENERATED))
+ifdef need_compile_java
 
 full_static_java_libs := \
     $(foreach lib,$(LOCAL_STATIC_JAVA_LIBRARIES), \
@@ -374,19 +378,20 @@ ifdef LOCAL_IS_HOST_MODULE
 ifeq ($(LOCAL_BUILD_HOST_DEX),true)
 $(LOCAL_INTERMEDIATE_TARGETS): PRIVATE_BOOTCLASSPATH := -bootclasspath $(call java-lib-files,core-hostdex,$(LOCAL_IS_HOST_MODULE))
 
-full_java_libs := $(call java-lib-files,$(LOCAL_JAVA_LIBRARIES),$(LOCAL_IS_HOST_MODULE))
+full_shared_java_libs := $(call java-lib-files,$(LOCAL_JAVA_LIBRARIES),$(LOCAL_IS_HOST_MODULE))
 full_java_lib_deps := $(call java-lib-deps,$(LOCAL_JAVA_LIBRARIES),$(LOCAL_IS_HOST_MODULE))
 else
 $(LOCAL_INTERMEDIATE_TARGETS): PRIVATE_BOOTCLASSPATH :=
 
-full_java_libs := $(addprefix $(HOST_OUT_JAVA_LIBRARIES)/,$(addsuffix $(COMMON_JAVA_PACKAGE_SUFFIX),$(LOCAL_JAVA_LIBRARIES)))
-full_java_lib_deps := $(full_java_libs)
+full_shared_java_libs := $(addprefix $(HOST_OUT_JAVA_LIBRARIES)/,\
+    $(addsuffix $(COMMON_JAVA_PACKAGE_SUFFIX),$(LOCAL_JAVA_LIBRARIES)))
+full_java_lib_deps := $(full_shared_java_libs)
 endif # LOCAL_BUILD_HOST_DEX
 else
-full_java_libs := $(call java-lib-files,$(LOCAL_JAVA_LIBRARIES),$(LOCAL_IS_HOST_MODULE))
+full_shared_java_libs := $(call java-lib-files,$(LOCAL_JAVA_LIBRARIES),$(LOCAL_IS_HOST_MODULE))
 full_java_lib_deps := $(call java-lib-deps,$(LOCAL_JAVA_LIBRARIES),$(LOCAL_IS_HOST_MODULE))
 endif # !LOCAL_IS_HOST_MODULE
-full_java_libs += $(full_static_java_libs) $(LOCAL_CLASSPATH)
+full_java_libs := $(full_shared_java_libs) $(full_static_java_libs) $(LOCAL_CLASSPATH)
 full_java_lib_deps += $(full_static_java_libs) $(LOCAL_CLASSPATH)
 
 # This is set by packages that are linking to other packages that export
@@ -399,6 +404,7 @@ ifdef LOCAL_APK_LIBRARIES
               APPS,$(lib),,COMMON)/classes.jar)
 
   # link against the jar with full original names (before proguard processing).
+  full_shared_java_libs += $(link_apk_libraries)
   full_java_libs += $(link_apk_libraries)
   full_java_lib_deps += $(link_apk_libraries)
 endif
@@ -413,14 +419,12 @@ ifdef LOCAL_INSTRUMENTATION_FOR
         $(LOCAL_PATH): Multiple LOCAL_INSTRUMENTATION_FOR members defined)
   endif
 
-  link_instr_intermediates_dir := $(call intermediates-dir-for, \
-      APPS,$(LOCAL_INSTRUMENTATION_FOR))
   link_instr_intermediates_dir.COMMON := $(call intermediates-dir-for, \
       APPS,$(LOCAL_INSTRUMENTATION_FOR),,COMMON)
-
   # link against the jar with full original names (before proguard processing).
-  full_java_libs += $(link_instr_intermediates_dir.COMMON)/classes.jar
-  full_java_lib_deps += $(link_instr_intermediates_dir.COMMON)/classes.jar
+  link_instr_classes_jar := $(link_instr_intermediates_dir.COMMON)/classes.jar
+  full_java_libs += $(link_instr_classes_jar)
+  full_java_lib_deps += $(link_instr_classes_jar)
 endif
 
 jar_manifest_file :=
@@ -431,7 +435,7 @@ else
 $(LOCAL_INTERMEDIATE_TARGETS): PRIVATE_JAR_MANIFEST :=
 endif
 
-endif
+endif  # need_compile_java
 
 
 ###########################################################
@@ -540,18 +544,14 @@ endif # !LOCAL_UNINSTALLABLE_MODULE
 ## CHECK_BUILD goals
 ###########################################################
 
+ifdef java_alternative_checked_module
+  LOCAL_CHECKED_MODULE := $(java_alternative_checked_module)
+endif
+
 # If nobody has defined a more specific module for the
 # checked modules, use LOCAL_BUILT_MODULE.
 ifndef LOCAL_CHECKED_MODULE
   LOCAL_CHECKED_MODULE := $(LOCAL_BUILT_MODULE)
-endif
-
-need_compile_java :=
-ifdef java_alternative_checked_module
-ifneq (,$(strip $(all_java_sources)$(full_static_java_libs))$(filter true,$(LOCAL_SOURCE_FILES_ALL_GENERATED)))
-  need_compile_java := true
-  LOCAL_CHECKED_MODULE := $(java_alternative_checked_module)
-endif
 endif
 
 # If they request that this module not be checked, then don't.

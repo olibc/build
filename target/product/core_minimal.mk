@@ -23,10 +23,8 @@ PRODUCT_DEVICE := generic
 PRODUCT_NAME := core
 
 PRODUCT_PACKAGES += \
-    ApplicationsProvider \
     BackupRestoreConfirmation \
     DownloadProvider \
-    DownloadProviderUi \
     HTMLViewer \
     MediaProvider \
     PackageInstaller \
@@ -37,7 +35,6 @@ PRODUCT_PACKAGES += \
     com.android.location.provider.xml \
     drmserver \
     framework-res \
-    hprof-conv \
     installd \
     ip \
     ip-up-vpn \
@@ -61,8 +58,6 @@ PRODUCT_PACKAGES += \
 PRODUCT_BOOT_JARS := core:conscrypt:okhttp:core-junit:bouncycastle:ext:framework:framework2:android.policy:services:apache-xml:webviewchromium
 
 PRODUCT_RUNTIMES := runtime_libdvm_default
-ifneq (,$(filter userdebug eng, $(TARGET_BUILD_VARIANT)))
-    PRODUCT_RUNTIMES += runtime_libart
-endif
+PRODUCT_RUNTIMES += runtime_libart
 
 $(call inherit-product, $(SRC_TARGET_DIR)/product/base.mk)

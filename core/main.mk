@@ -221,8 +221,6 @@ $(INTERNAL_MODIFIER_TARGETS): $(DEFAULT_GOAL)
 endif
 
 # Bring in all modules that need to be built.
-ifneq ($(dont_bother),true)
-
 ifeq ($(HOST_OS)-$(HOST_ARCH),darwin-ppc)
 SDK_ONLY := true
 $(info Building the SDK under darwin-ppc is actually obsolete and unsupported.)
@@ -275,8 +273,15 @@ FULL_BUILD :=
 NOTICE-HOST-%: ;
 NOTICE-TARGET-%: ;
 
+# A helper goal printing out install paths
+.PHONY: GET-INSTALL-PATH
+GET-INSTALL-PATH:
+	@$(foreach m, $(ALL_MODULES), $(if $(ALL_MODULES.$(m).INSTALLED), \
+		echo 'INSTALL-PATH: $(m) $(ALL_MODULES.$(m).INSTALLED)';))
+
 else # ONE_SHOT_MAKEFILE
 
+ifneq ($(dont_bother),true)
 #
 # Include all of the makefiles in the system
 #
@@ -286,7 +291,9 @@ else # ONE_SHOT_MAKEFILE
 subdir_makefiles := \
 	$(shell build/tools/findleaves.py --prune=$(OUT_DIR) --prune=.repo --prune=.git $(subdirs) Android.mk)
 
-include $(subdir_makefiles)
+$(foreach mk, $(subdir_makefiles), $(info including $(mk) ...)$(eval include $(mk)))
+
+endif # dont_bother
 
 endif # ONE_SHOT_MAKEFILE
 
@@ -298,16 +305,6 @@ endif
 # All module makefiles have been included at this point.
 # -------------------------------------------------------------------
 
-# -------------------------------------------------------------------
-# Include any makefiles that must happen after the module makefiles
-# have been included.
-# TODO: have these files register themselves via a global var rather
-# than hard-coding the list here.
-ifdef FULL_BUILD
-  # Only include this during a full build, otherwise we can't be
-  # guaranteed that any policies were included.
-  -include frameworks/policies/base/PolicyConfig.mk
-endif
 
 # -------------------------------------------------------------------
 # Fix up CUSTOM_MODULES to refer to installed files rather than
@@ -470,8 +467,6 @@ include $(BUILD_SYSTEM)/Makefile
 modules_to_install := $(sort $(ALL_DEFAULT_INSTALLED_MODULES))
 ALL_DEFAULT_INSTALLED_MODULES :=
 
-endif # dont_bother
-
 
 # These are additional goals that we build, in order to make sure that there
 # is as little code as possible in the tree that doesn't build.
@@ -546,7 +541,7 @@ ifneq ($(TARGET_BUILD_APPS),)
   # For uninstallable modules such as static Java library, we have to dist the built file,
   # as <module_name>.<suffix>
   apps_only_dist_built_files := $(foreach m,$(unbundled_build_modules),$(if $(ALL_MODULES.$(m).INSTALLED),,\
-      $(ALL_MODULES.$(m).BUILT):$(m)$(suffix $(ALL_MODULES.$(m).BUILT))))
+      $(if $(ALL_MODULES.$(m).BUILT),$(ALL_MODULES.$(m).BUILT):$(m)$(suffix $(ALL_MODULES.$(m).BUILT)))))
   $(call dist-for-goals,apps_only, $(apps_only_dist_built_files))
 
   ifeq ($(EMMA_INSTRUMENT),true)
@@ -555,10 +550,22 @@ ifneq ($(TARGET_BUILD_APPS),)
     $(call dist-for-goals,apps_only, $(EMMA_META_ZIP))
   endif
 
+  $(PROGUARD_DICT_ZIP) : $(apps_only_installed_files)
+  $(call dist-for-goals,apps_only, $(PROGUARD_DICT_ZIP))
+
 .PHONY: apps_only
 apps_only: $(unbundled_build_modules)
 
 droid: apps_only
+
+# Combine the NOTICE files for a apps_only build
+$(eval $(call combine-notice-files, \
+    $(target_notice_file_txt), \
+    $(target_notice_file_html), \
+    "Notices for files for apps:", \
+    $(TARGET_OUT_NOTICE_FILES), \
+    $(apps_only_installed_files)))
+
 
 else # TARGET_BUILD_APPS
   $(call dist-for-goals, droidcore, \
