@@ -134,7 +134,6 @@ TARGET_GLOBAL_CFLAGS += \
 			-fstack-protector \
 			-m32
 
-
 # XXX: Not sure this is still needed. Must check with our toolchains.
 TARGET_GLOBAL_CPPFLAGS += \
 			-fno-use-cxa-atexit
@@ -182,6 +181,7 @@ TARGET_GLOBAL_LDFLAGS += -m32
 TARGET_GLOBAL_LDFLAGS += -Wl,-z,noexecstack
 TARGET_GLOBAL_LDFLAGS += -Wl,-z,relro -Wl,-z,now
 TARGET_GLOBAL_LDFLAGS += -Wl,--warn-shared-textrel
+TARGET_GLOBAL_LDFLAGS += -Wl,--fatal-warnings
 TARGET_GLOBAL_LDFLAGS += -Wl,--gc-sections
 
 TARGET_C_INCLUDES := \
@@ -237,7 +237,7 @@ define transform-o-to-executable-inner
 $(hide) $(PRIVATE_CXX) \
 	$(PRIVATE_TARGET_GLOBAL_LDFLAGS) \
 	-nostdlib -Bdynamic \
-	-Wl,-dynamic-linker,$(strip $(DYNAMIC_LINKER)) \
+	-Wl,-dynamic-linker,/system/bin/linker \
 	-Wl,-z,nocopyreloc \
 	-fPIE -pie \
 	$(PRIVATE_TARGET_GLOBAL_LD_DIRS) \

@@ -45,6 +45,9 @@ ifeq ($(strip $(wildcard $(TARGET_ARCH_SPECIFIC_MAKEFILE))),)
 $(error Unknown ARM architecture version: $(TARGET_ARCH_VARIANT))
 endif
 
+# TODO: Enable Clang when aarch64 prebuilt is added
+WITHOUT_CLANG := true
+
 include $(TARGET_ARCH_SPECIFIC_MAKEFILE)
 
 # You can set TARGET_TOOLS_PREFIX to get gcc from somewhere else
@@ -101,10 +104,10 @@ TARGET_GLOBAL_CFLAGS += -fno-strict-volatile-bitfields
 #
 TARGET_GLOBAL_CFLAGS += -Wno-psabi
 
+# TODO - temporarily remove "-Wl,-z,relro -Wl,-z,now" as they cause segmentation fault on the
+# v8 foundation model.
 TARGET_GLOBAL_LDFLAGS += \
 			-Wl,-z,noexecstack \
-			-Wl,-z,relro \
-			-Wl,-z,now \
 			-Wl,--warn-shared-textrel \
 			-Wl,--fatal-warnings \
 			$(arch_variant_ldflags)
@@ -125,6 +128,8 @@ libm_root := bionic/libm
 libstdc++_root := bionic/libstdc++
 libthread_db_root := bionic/libthread_db
 
+TARGET_LIBGCC := $(shell $(TARGET_CC) $(TARGET_GLOBAL_CFLAGS) \
+	-print-libgcc-file-name)
 
 # unless CUSTOM_KERNEL_HEADERS is defined, we're going to use
 # symlinks located in out/ to point to the appropriate kernel
@@ -133,11 +138,13 @@ libthread_db_root := bionic/libthread_db
 ifneq ($(CUSTOM_KERNEL_HEADERS),)
     KERNEL_HEADERS_COMMON := $(CUSTOM_KERNEL_HEADERS)
     KERNEL_HEADERS_ARCH   := $(CUSTOM_KERNEL_HEADERS)
+    KERNEL_HEADERS_AUX    := $(CUSTOM_KERNEL_HEADERS)
 else
-    KERNEL_HEADERS_COMMON := $(libc_root)/kernel/common
-    KERNEL_HEADERS_ARCH   := $(libc_root)/kernel/arch-$(TARGET_ARCH)
+    KERNEL_HEADERS_COMMON := $(libc_root)/kernel/uapi
+    KERNEL_HEADERS_ARCH   := $(libc_root)/kernel/uapi/asm-$(TARGET_ARCH)
+    KERNEL_HEADERS_AUX    := $(libc_root)/kernel/common
 endif
-KERNEL_HEADERS := $(KERNEL_HEADERS_COMMON) $(KERNEL_HEADERS_ARCH)
+KERNEL_HEADERS := $(KERNEL_HEADERS_COMMON) $(KERNEL_HEADERS_ARCH) $(KERNEL_HEADERS_AUX)
 
 TARGET_C_INCLUDES := \
 	$(libc_root)/arch-aarch64/include \
@@ -148,14 +155,12 @@ TARGET_C_INCLUDES := \
 	$(libm_root)/include/aarch64 \
 	$(libthread_db_root)/include
 
-# FIXME
-# CRT* objects to be added later
-TARGET_CRTBEGIN_STATIC_O :=
-TARGET_CRTBEGIN_DYNAMIC_O :=
-TARGET_CRTEND_O :=
+TARGET_CRTBEGIN_STATIC_O := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/crtbegin_static.o
+TARGET_CRTBEGIN_DYNAMIC_O := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/crtbegin_dynamic.o
+TARGET_CRTEND_O := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/crtend_android.o
 
-TARGET_CRTBEGIN_SO_O :=
-TARGET_CRTEND_SO_O :=
+TARGET_CRTBEGIN_SO_O := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/crtbegin_so.o
+TARGET_CRTEND_SO_O := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/crtend_so.o
 
 TARGET_STRIP_MODULE:=true
 
@@ -188,7 +193,7 @@ endef
 
 define transform-o-to-executable-inner
 $(hide) $(PRIVATE_CXX) -nostdlib -Bdynamic -fPIE -pie \
-	-Wl,-dynamic-linker,/system/bin/linker \
+	-Wl,-dynamic-linker,/system/bin/linker64 \
 	-Wl,-z,nocopyreloc \
 	$(PRIVATE_TARGET_GLOBAL_LD_DIRS) \
 	-Wl,-rpath-link=$(TARGET_OUT_INTERMEDIATE_LIBRARIES) \
@@ -211,7 +216,7 @@ $(hide) $(PRIVATE_CXX) -nostdlib -Bdynamic -fPIE -pie \
 endef
 
 define transform-o-to-static-executable-inner
-$(hide) $(PRIVATE_CXX) -Bstatic \
+$(hide) $(PRIVATE_CXX) -nostdlib -Bstatic \
 	-o $@ \
 	$(PRIVATE_TARGET_GLOBAL_LD_DIRS) \
 	$(if $(filter true,$(PRIVATE_NO_CRT)),,$(PRIVATE_TARGET_CRTBEGIN_STATIC_O)) \
