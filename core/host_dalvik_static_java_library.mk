@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2008 The Android Open Source Project
+# Copyright (C) 2013 The Android Open Source Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,11 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# BUILD_ID is usually used to specify the branch name
-# (like "MAIN") or a branch name and a release candidate
-# (like "CRB01").  It must be a single word, and is
-# capitalized by convention.
 
-BUILD_ID := OPENMASTER
+#
+# Rules for building a host dalvik static java library.
+# These libraries will be compiled against libcore and not the host
+# JRE.
+#
 
-DISPLAY_BUILD_NUMBER := true
+USE_CORE_LIB_BOOTCLASSPATH := true
+LOCAL_JAVA_LIBRARIES += core-hostdex
+
+include $(BUILD_SYSTEM)/host_java_library.mk
+
+USE_CORE_LIB_BOOTCLASSPATH :=
