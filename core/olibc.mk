@@ -90,6 +90,10 @@ ifeq ($(TARGET_ARCH),arm)
   endif
 endif
 
+ifeq ($(TARGET_ARCH),aarch64)
+  TARGET_PRODUCT=mini_aarch64
+endif
+
 ifeq ($(TARGET_ARCH),mips)
   TARGET_PRODUCT=mini_mips
 endif
