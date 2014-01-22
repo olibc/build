@@ -147,8 +147,6 @@ endif # all_resources
 endif # !custom
 LOCAL_PROGUARD_FLAGS := $(addprefix -include ,$(proguard_options_file)) $(LOCAL_PROGUARD_FLAGS)
 
-LOCAL_DEX_PREOPT :=
-
 ifeq (true,$(EMMA_INSTRUMENT))
 ifndef LOCAL_EMMA_INSTRUMENT
 # No emma for test apks.
@@ -362,8 +360,16 @@ PACKAGES.$(LOCAL_PACKAGE_NAME).CERTIFICATE := $(certificate)
 # Define the rule to build the actual package.
 $(LOCAL_BUILT_MODULE): $(AAPT) | $(ZIPALIGN)
 ifdef LOCAL_DEX_PREOPT
+$(LOCAL_BUILT_MODULE): PRIVATE_DEX_LOCATION := $(patsubst $(PRODUCT_OUT)%,%,$(LOCAL_INSTALLED_MODULE))
+$(LOCAL_BUILT_MODULE): PRIVATE_BUILT_ODEX := $(built_odex)
+$(LOCAL_BUILT_MODULE): PRIVATE_DEX_PREOPT_IMAGE := $(LOCAL_DEX_PREOPT_IMAGE)
 # Make sure the boot jars get dexpreopt-ed first
-$(LOCAL_BUILT_MODULE): $(DEXPREOPT_BOOT_ODEXS) | $(DEXPREOPT) $(DEXOPT)
+$(LOCAL_BUILT_MODULE) : $(DEXPREOPT_ONE_FILE_DEPENDENCY_BUILT_BOOT_PREOPT)
+$(LOCAL_BUILT_MODULE) : $(DEXPREOPT_ONE_FILE_DEPENDENCY_TOOLS)
+$(LOCAL_BUILT_MODULE) : $(LOCAL_DEX_PREOPT_IMAGE)
+
+# built_odex is byproduct of LOCAL_BUILT_MODULE without its own build recipe.
+$(built_odex) : $(LOCAL_BUILT_MODULE)
 endif
 $(LOCAL_BUILT_MODULE): PRIVATE_JNI_SHARED_LIBRARIES := $(jni_shared_libraries)
 $(LOCAL_BUILT_MODULE): PRIVATE_JNI_SHARED_LIBRARIES_ABI := $(jni_shared_libraries_abi)
@@ -394,19 +400,13 @@ ifneq ($(extra_jar_args),)
 endif
 	$(sign-package)
 ifdef LOCAL_DEX_PREOPT
-	$(hide) rm -f $(patsubst %.apk,%.odex,$@)
-	$(call dexpreopt-one-file,$@,$(patsubst %.apk,%.odex,$@))
+	$(call dexpreopt-one-file,$(PRIVATE_DEX_PREOPT_IMAGE),$@,$(PRIVATE_DEX_LOCATION),$(PRIVATE_BUILT_ODEX))
 ifneq (nostripping,$(LOCAL_DEX_PREOPT))
 	$(call dexpreopt-remove-classes.dex,$@)
 endif
 endif
 	@# Alignment must happen after all other zip operations.
 	$(align-package)
-
-ifdef LOCAL_DEX_PREOPT
-built_odex := $(basename $(LOCAL_BUILT_MODULE)).odex
-$(built_odex): $(LOCAL_BUILT_MODULE)
-endif
 
 # Save information about this package
 PACKAGES.$(LOCAL_PACKAGE_NAME).OVERRIDES := $(strip $(LOCAL_OVERRIDES_PACKAGES))
