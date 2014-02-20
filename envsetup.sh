@@ -136,6 +136,8 @@ function setpaths()
             ;;
         mips) toolchaindir=mips/mipsel-linux-android-$targetgccversion/bin
             ;;
+        mips64) toolchaindir=mips/mipsel-linux-android-$targetgccversion/bin
+            ;;
         *)
             echo "Can't find toolchain for unknown architecture: $ARCH"
             toolchaindir=xxxxxxxxx
@@ -912,9 +914,12 @@ function gdbclient()
    local ARCH=$(get_build_var TARGET_ARCH)
    local GDB
    case "$ARCH" in
-       x86) GDB=x86_64-linux-android-gdb;;
        arm) GDB=arm-linux-androideabi-gdb;;
+       arm64) GDB=aarch64-linux-android-gdb;;
        mips) GDB=mipsel-linux-android-gdb;;
+       mips64) GDB=mipsel-linux-android-gdb;;
+       x86) GDB=x86_64-linux-android-gdb;;
+       x86_64) GDB=x86_64-linux-android-gdb;;
        *) echo "Unknown arch $ARCH"; return 1;;
    esac
 
