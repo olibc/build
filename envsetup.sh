@@ -136,7 +136,7 @@ function setpaths()
             ;;
         mips) toolchaindir=mips/mipsel-linux-android-$targetgccversion/bin
             ;;
-        mips64) toolchaindir=mips/mipsel-linux-android-$targetgccversion/bin
+        mips64) toolchaindir=mips/mips64el-linux-android-$targetgccversion/bin
             ;;
         *)
             echo "Can't find toolchain for unknown architecture: $ARCH"
