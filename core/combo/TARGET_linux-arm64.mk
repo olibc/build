@@ -93,8 +93,6 @@ TARGET_GLOBAL_CFLAGS += \
 			-D_FORTIFY_SOURCE=2 \
 			-fno-short-enums \
 			$(arch_variant_cflags) \
-			-include $(android_config_h) \
-			-I $(dir $(android_config_h))
 
 # Help catch common 32/64-bit errors.
 TARGET_GLOBAL_CFLAGS += \

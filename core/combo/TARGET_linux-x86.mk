@@ -122,9 +122,7 @@ $(combo_2nd_arch_prefix)TARGET_GLOBAL_CFLAGS += \
 			-funswitch-loops \
 			-funwind-tables \
 			-fstack-protector \
-			-m32 \
-			-include $(android_config_h) \
-			-I $(dir $(android_config_h))
+			-m32
 
 $(combo_2nd_arch_prefix)TARGET_GLOBAL_CFLAGS += $(arch_variant_cflags)
 

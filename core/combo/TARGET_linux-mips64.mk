@@ -98,8 +98,6 @@ TARGET_GLOBAL_CFLAGS += \
 			-Werror=format-security \
 			-D_FORTIFY_SOURCE=2 \
 			$(arch_variant_cflags) \
-			-include $(android_config_h) \
-			-I $(dir $(android_config_h))
 
 # This warning causes dalvik not to build with gcc 4.6+ and -Werror.
 # We cannot turn it off blindly since the option is not available
