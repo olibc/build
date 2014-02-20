@@ -91,6 +91,9 @@ TARGET_GLOBAL_CFLAGS += \
 			-include $(android_config_h) \
 			-I $(dir $(android_config_h))
 
+# HACK: globally disable -fstack-protector until the toolchain supports it
+TARGET_GLOBAL_UNSUPPORTED_CFLAGS := -fstack-protector
+
 # TODO - remove __ANDROID__ after the next aarch64 toolchain refresh
 TARGET_GLOBAL_CFLAGS += -D__ANDROID__=1
 
@@ -128,7 +131,6 @@ TARGET_RELEASE_CFLAGS := \
 libc_root := bionic/libc
 libm_root := bionic/libm
 libstdc++_root := bionic/libstdc++
-libthread_db_root := bionic/libthread_db
 
 TARGET_LIBGCC := $(shell $(TARGET_CC) $(TARGET_GLOBAL_CFLAGS) \
 	-print-libgcc-file-name)
@@ -144,7 +146,6 @@ TARGET_C_INCLUDES := \
 	$(KERNEL_HEADERS) \
 	$(libm_root)/include \
 	$(libm_root)/include/arm64 \
-	$(libthread_db_root)/include
 
 TARGET_CRTBEGIN_STATIC_O := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/crtbegin_static.o
 TARGET_CRTBEGIN_DYNAMIC_O := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)/crtbegin_dynamic.o
