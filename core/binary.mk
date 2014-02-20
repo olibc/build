@@ -94,7 +94,7 @@ my_ldflags := $(LOCAL_LDFLAGS) $(LOCAL_LDFLAGS_$(TARGET_$(LOCAL_2ND_ARCH_VAR_PRE
 my_asflags := $(LOCAL_ASFLAGS) $(LOCAL_ASFLAGS_$(TARGET_$(LOCAL_2ND_ARCH_VAR_PREFIX)ARCH))
 my_cc := $(LOCAL_CC)
 my_cxx := $(LOCAL_CXX)
-my_c_includes := $(LOCAL_C_INCLUDES)
+my_c_includes := $(LOCAL_C_INCLUDES) $(LOCAL_C_INCLUDES_$(TARGET_$(LOCAL_2ND_ARCH_VAR_PREFIX)ARCH))
 my_generated_sources := $(LOCAL_GENERATED_SOURCES)
 
 
@@ -377,8 +377,15 @@ endif
 ###########################################################
 $(my_generated_sources): PRIVATE_MODULE := $(my_register_name)
 
-ALL_GENERATED_SOURCES += $(my_generated_sources)
+my_gen_sources_copy := $(patsubst $(generated_sources_dir)/%,$(intermediates)/%,$(filter $(generated_sources_dir)/%,$(my_generated_sources)))
 
+$(my_gen_sources_copy): $(intermediates)/% : $(generated_sources_dir)/% | $(ACP)
+	@echo "Copy: $@"
+	$(copy-file-to-target)
+
+my_generated_sources := $(patsubst $(generated_sources_dir)/%,$(intermediates)/%,$(my_generated_sources))
+
+ALL_GENERATED_SOURCES += $(my_generated_sources)
 
 ###########################################################
 ## Compile the .proto files to .cc and then to .o
