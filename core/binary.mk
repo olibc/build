@@ -703,7 +703,7 @@ normal_objects := \
 
 all_objects := $(normal_objects) $(gen_o_objects)
 
-my_c_includes += $(TOPDIR)$(LOCAL_PATH) $(intermediates)
+my_c_includes += $(TOPDIR)$(LOCAL_PATH) $(intermediates) $(generated_sources_dir)
 
 # all_objects includes gen_o_objects which were part of LOCAL_GENERATED_SOURCES;
 # use normal_objects here to avoid creating circular dependencies. This assumes
