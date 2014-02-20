@@ -396,36 +396,6 @@ $(1): $(2)
 endef
 
 ###########################################################
-## Set up the dependencies for a prebuilt target
-##  $(call add-prebuilt-file, srcfile, [targetclass])
-###########################################################
-
-define add-prebuilt-file
-    $(eval $(include-prebuilt))
-endef
-
-define include-prebuilt
-    include $$(CLEAR_VARS)
-    LOCAL_SRC_FILES := $(1)
-    LOCAL_BUILT_MODULE_STEM := $(1)
-    LOCAL_MODULE_SUFFIX := $$(suffix $(1))
-    LOCAL_MODULE := $$(basename $(1))
-    LOCAL_MODULE_CLASS := $(2)
-    include $$(BUILD_PREBUILT)
-endef
-
-###########################################################
-## do multiple prebuilts
-##  $(call target class, files ...)
-###########################################################
-
-define add-prebuilt-files
-    $(foreach f,$(2),$(call add-prebuilt-file,$f,$(1)))
-endef
-
-
-
-###########################################################
 ## The intermediates directory.  Where object files go for
 ## a given target.  We could technically get away without
 ## the "_intermediates" suffix on the directory, but it's
@@ -447,11 +417,13 @@ $(strip \
     $(if $(_idfName),, \
         $(error $(LOCAL_PATH): Name not defined in call to intermediates-dir-for)) \
     $(eval _idfPrefix := $(if $(strip $(3)),HOST,TARGET)) \
-    $(eval _idf2ndArchPrefix := $(if $(strip $(5)),$(TARGET_2ND_ARCH_VAR_PREFIX))) \
+    $(eval _idf2ndArchPrefix := $(if $(call directory_is_64_bit_blacklisted,$(LOCAL_PATH))$(strip $(5)),$(TARGET_2ND_ARCH_VAR_PREFIX))) \
     $(if $(filter $(_idfPrefix)-$(_idfClass),$(COMMON_MODULE_CLASSES))$(4), \
         $(eval _idfIntBase := $($(_idfPrefix)_OUT_COMMON_INTERMEDIATES)) \
-      , \
-        $(eval _idfIntBase := $($(_idf2ndArchPrefix)$(_idfPrefix)_OUT_INTERMEDIATES)) \
+      ,$(if $(filter $(_idfPrefix)-$(_idfClass),TARGET-SHARED_LIBRARIES TARGET-STATIC_LIBRARIES TARGET-EXECUTABLES),\
+          $(eval _idfIntBase := $($(_idf2ndArchPrefix)$(_idfPrefix)_OUT_INTERMEDIATES)) \
+       ,$(eval _idfIntBase := $($(_idfPrefix)_OUT_INTERMEDIATES)) \
+       ) \
      ) \
     $(_idfIntBase)/$(_idfClass)/$(_idfName)_intermediates \
 )
