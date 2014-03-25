@@ -25,14 +25,14 @@ endef
 # Previously the prebiult host toolchain is used only for the sdk build,
 # that's why we have "sdk" in the path name.
 ifeq ($(strip $(HOST_TOOLCHAIN_PREFIX)),)
-HOST_TOOLCHAIN_PREFIX := prebuilts/tools/gcc-sdk
+HOST_TOOLCHAIN_PREFIX := prebuilts/tools/gcc-sdk/
 endif
 # Don't do anything if the toolchain is not there
-ifneq (,$(strip $(wildcard $(HOST_TOOLCHAIN_PREFIX)/gcc)))
-HOST_CC  := $(HOST_TOOLCHAIN_PREFIX)/gcc
-HOST_CXX := $(HOST_TOOLCHAIN_PREFIX)/g++
-HOST_AR  := $(HOST_TOOLCHAIN_PREFIX)/ar
-endif # $(HOST_TOOLCHAIN_PREFIX)/gcc exists
+ifneq (,$(strip $(wildcard $(HOST_TOOLCHAIN_PREFIX)gcc)))
+HOST_CC  := $(HOST_TOOLCHAIN_PREFIX)gcc
+HOST_CXX := $(HOST_TOOLCHAIN_PREFIX)g++
+HOST_AR  := $(HOST_TOOLCHAIN_PREFIX)ar
+endif # $(HOST_TOOLCHAIN_PREFIX)gcc exists
 
 ifneq ($(strip $(BUILD_HOST_64bit)),)
 # By default we build everything in 32-bit, because it gives us
@@ -60,6 +60,6 @@ HOST_GLOBAL_CFLAGS += -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0
 
 # Workaround differences in inttypes.h between host and target.
 # See bug 12708004.
-HOST_GLOBAL_CFLAGS += -D__STDC_FORMAT_MACROS
+HOST_GLOBAL_CFLAGS += -D__STDC_FORMAT_MACROS -D__STDC_CONSTANT_MACROS
 
 HOST_NO_UNDEFINED_LDFLAGS := -Wl,--no-undefined
