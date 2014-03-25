@@ -8,7 +8,6 @@ _64_bit_directory_blacklist += \
 
 # Chromium/V8: needs 64-bit support
 _64_bit_directory_blacklist += \
-	external/chromium \
 	external/chromium-libpac \
 	external/chromium_org \
 	external/v8 \
@@ -16,19 +15,18 @@ _64_bit_directory_blacklist += \
 
 # misc build errors
 _64_bit_directory_blacklist += \
-	frameworks/av \
-	frameworks/base \
 	device/generic/goldfish/opengl \
 	device/generic/goldfish/camera \
 
 # depends on frameworks/av
 _64_bit_directory_blacklist += \
 	external/srec \
-	hardware/libhardware_legacy/audio \
-	hardware/libhardware/modules/audio_remote_submix \
-	frameworks/wilhelm \
 	frameworks/opt \
 	frameworks/ex \
+
+# not needed yet, and too many directories to blacklist individually
+_64_bit_directory_blacklist += \
+	frameworks/av/media/libeffects \
 
 _64_bit_directory_blacklist_pattern := $(addsuffix %,$(_64_bit_directory_blacklist))
 
