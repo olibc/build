@@ -7,6 +7,7 @@ Invoke ". build/envsetup.sh" from your shell to add the following functions to y
 - m:       Makes from the top of the tree.
 - mm:      Builds all of the modules in the current directory, but not their dependencies.
 - mmm:     Builds all of the modules in the supplied directories, but not their dependencies.
+           To limit the modules being built use the syntax: mmm dir/:target1,target2.
 - mma:     Builds all of the modules in the current directory, and their dependencies.
 - mmma:    Builds all of the modules in the supplied directories, and their dependencies.
 - cgrep:   Greps on all local C/C++ files.
@@ -189,10 +190,6 @@ function setpaths()
 
     unset ANDROID_HOST_OUT
     export ANDROID_HOST_OUT=$(get_abs_build_var HOST_OUT)
-
-    # needed for processing samples collected by perf counters
-    unset OPROFILE_EVENTS_DIR
-    export OPROFILE_EVENTS_DIR=$T/external/oprofile/events
 
     # needed for building linux on MacOS
     # TODO: fix the path
@@ -616,8 +613,8 @@ function getdriver()
     test "$WITH_STATIC_ANALYZER" = "0" && unset WITH_STATIC_ANALYZER
     if [ -n "$WITH_STATIC_ANALYZER" ]; then
         echo "\
-$T/prebuilts/clang/linux-x86/host/3.3/tools/scan-build/scan-build \
---use-analyzer $T/prebuilts/clang/linux-x86/host/3.3/bin/analyzer \
+$T/prebuilts/misc/linux-x86/analyzer/tools/scan-build/scan-build \
+--use-analyzer $T/prebuilts/misc/linux-x86/analyzer/bin/analyzer \
 --status-bugs \
 --top=$T"
     fi
