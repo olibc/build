@@ -5,7 +5,6 @@ _64_bit_directory_blacklist += \
 	external/conscrypt \
 	external/neven \
 	external/svox \
-	libcore \
 	packages \
 
 # Chromium/V8: needs 64-bit support
@@ -20,6 +19,7 @@ _64_bit_directory_blacklist += \
 # misc build errors
 _64_bit_directory_blacklist += \
 	external/bluetooth/bluedroid \
+	external/oprofile/daemon \
 	external/oprofile/opcontrol \
 	external/tcpdump \
 	frameworks/av \
@@ -30,11 +30,6 @@ _64_bit_directory_blacklist += \
 	frameworks/wilhelm \
 	device/generic/goldfish/opengl \
 	device/generic/goldfish/camera \
-
-# depends on libnl_2
-_64_bit_directory_blacklist += \
-	external/android-clat \
-	external/wpa_suplicant_8
 
 # depends on frameworks/av
 _64_bit_directory_blacklist += \
