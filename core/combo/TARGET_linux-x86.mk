@@ -104,7 +104,6 @@ KERNEL_HEADERS := $(KERNEL_HEADERS_COMMON) $(KERNEL_HEADERS_ARCH)
 
 $(combo_2nd_arch_prefix)TARGET_GLOBAL_CFLAGS += \
 			-O2 \
-			-Ulinux \
 			-Wa,--noexecstack \
 			-Werror=format-security \
 			-D_FORTIFY_SOURCE=2 \

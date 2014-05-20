@@ -115,7 +115,6 @@ function setpaths()
     fi
 
     # and in with the new
-    CODE_REVIEWS=
     prebuiltdir=$(getprebuilt)
     gccprebuiltdir=$(get_abs_build_var ANDROID_GCC_PREBUILTS)
 
@@ -160,11 +159,9 @@ function setpaths()
             # Legacy toolchain configuration used for ARM kernel compilation
             toolchaindir=arm/arm-eabi-$targetgccversion/bin
             if [ -d "$gccprebuiltdir/$toolchaindir" ]; then
-                 ANDROID_KERNEL_TOOLCHAIN_PATH="$gccprebuiltdir/$toolchaindir"
-                 export ARM_EABI_TOOLCHAIN=$ANDROID_KERNEL_TOOLCHAIN_PATH
+                 export ARM_EABI_TOOLCHAIN="$gccprebuiltdir/$toolchaindir"
+                 ANDROID_KERNEL_TOOLCHAIN_PATH="$ARM_EABI_TOOLCHAIN":
             fi
-            ;;
-        mips) toolchaindir=mips/mips-eabi-4.4.3/bin
             ;;
         *)
             # No need to set ARM_EABI_TOOLCHAIN for other ARCHs
@@ -173,7 +170,7 @@ function setpaths()
 
     export ANDROID_QTOOLS=$T/development/emulator/qtools
     export ANDROID_DEV_SCRIPTS=$T/development/scripts:$T/prebuilts/devtools/tools
-    export ANDROID_BUILD_PATHS=$(get_build_var ANDROID_BUILD_PATHS):$ANDROID_QTOOLS:$ANDROID_TOOLCHAIN$ARM_EABI_TOOLCHAIN_PATH$CODE_REVIEWS:$ANDROID_DEV_SCRIPTS:
+    export ANDROID_BUILD_PATHS=$(get_build_var ANDROID_BUILD_PATHS):$ANDROID_QTOOLS:$ANDROID_TOOLCHAIN:$ANDROID_KERNEL_TOOLCHAIN_PATH$ANDROID_DEV_SCRIPTS:
     #export PATH=$ANDROID_BUILD_PATHS$PATH
 
     unset ANDROID_JAVA_TOOLCHAIN
@@ -1386,7 +1383,7 @@ function set_java_home() {
       else
         case `uname -s` in
             Darwin)
-                export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.7.0_51.jdk/Contents/Home
+                export JAVA_HOME=$(/usr/libexec/java_home -v 1.7)
                 ;;
             *)
                 export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
