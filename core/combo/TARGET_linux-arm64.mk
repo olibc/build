@@ -87,6 +87,8 @@ TARGET_GLOBAL_CFLAGS += \
 			-Werror=format-security \
 			-D_FORTIFY_SOURCE=2 \
 			-fno-short-enums \
+			-no-canonical-prefixes \
+			-fno-canonical-system-headers \
 			$(arch_variant_cflags) \
 
 # Help catch common 32/64-bit errors.

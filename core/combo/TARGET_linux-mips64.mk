@@ -95,6 +95,8 @@ TARGET_GLOBAL_CFLAGS += \
 			-Wa,--noexecstack \
 			-Werror=format-security \
 			-D_FORTIFY_SOURCE=2 \
+			-no-canonical-prefixes \
+			-fno-canonical-system-headers \
 			$(arch_variant_cflags) \
 
 # This warning causes dalvik not to build with gcc 4.6+ and -Werror.

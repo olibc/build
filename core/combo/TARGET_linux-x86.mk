@@ -118,7 +118,10 @@ $(combo_2nd_arch_prefix)TARGET_GLOBAL_CFLAGS += \
 			-funswitch-loops \
 			-funwind-tables \
 			-fstack-protector \
-			-m32
+			-m32 \
+			-msse2 \
+			-no-canonical-prefixes \
+			-fno-canonical-system-headers \
 
 $(combo_2nd_arch_prefix)TARGET_GLOBAL_CFLAGS += $(arch_variant_cflags)
 
